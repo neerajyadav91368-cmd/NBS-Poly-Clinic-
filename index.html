@@ -67,7 +67,7 @@
     }
   </style>
 
-  <!-- Login Logic Script (Sabse pehle independent execute hota hai) -->
+  <!-- Login Handlers -->
   <script>
     var PASSWORDS = { reg: "1111", doc: "2222", path: "3333", rad: "4444", pharm: "5555" };
     var currentRole = null;
@@ -335,7 +335,7 @@
     </div>
   </div>
 
-  <!-- Firebase SDKs placed safely at bottom -->
+  <!-- Firebase SDKs safely loaded -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
@@ -343,21 +343,25 @@
     var db = null;
     var cachedPatients = [];
 
-    // Local Storage backup helper
+    // Local Storage Data Access
     function getStoredPatients() {
       try {
-        return JSON.parse(localStorage.getItem('nbs_patients') || '[]');
-      } catch(e) { return []; }
+        var data = localStorage.getItem('nbs_patients_v3');
+        return data ? JSON.parse(data) : [];
+      } catch (e) {
+        return [];
+      }
     }
 
-    function saveStoredPatients(list) {
+    function setStoredPatients(list) {
       try {
-        localStorage.setItem('nbs_patients', JSON.stringify(list));
-      } catch(e) {}
+        localStorage.setItem('nbs_patients_v3', JSON.stringify(list));
+      } catch (e) {}
     }
 
+    // UI Renderer for all departments
     function renderPatientsList(patients) {
-      cachedPatients = patients;
+      cachedPatients = patients || [];
       var docSelect = document.getElementById('doc_patient_select');
       var selectedVal = docSelect ? docSelect.value : "";
       if (docSelect) docSelect.innerHTML = '<option value="">-- Select Patient --</option>';
@@ -366,15 +370,15 @@
       var radHtml = '';
       var pharmHtml = '';
 
-      if (!patients || patients.length === 0) {
+      if (cachedPatients.length === 0) {
         document.getElementById('pathology_records_list').innerHTML = '<p style="color:#64748b;">Abhi tak koi patient register nahi hua hai.</p>';
         document.getElementById('radiology_records_list').innerHTML = '<p style="color:#64748b;">Abhi tak koi patient register nahi hua hai.</p>';
         document.getElementById('pharmacy_records_list').innerHTML = '<p style="color:#64748b;">Abhi tak koi patient register nahi hua hai.</p>';
         return;
       }
 
-      for (var i = 0; i < patients.length; i++) {
-        var p = patients[i];
+      for (var i = 0; i < cachedPatients.length; i++) {
+        var p = cachedPatients[i];
         if (docSelect) docSelect.innerHTML += '<option value="' + p.mobile + '">' + p.name + ' (' + p.mobile + ')</option>';
 
         var pathTestsText = p.pathologyTests ? p.pathologyTests : '<span style="color:#94a3b8; font-style:italic;">No Test Prescribed</span>';
@@ -399,4 +403,4 @@
         pharmHtml += '<div class="patient-card">' +
           '<div class="patient-header"><div><span class="patient-name">' + p.name + '</span> (' + p.gender + ', ' + p.age + ' yrs)<div class="patient-meta">Mob: ' + p.mobile + '</div></div>' +
           '<span class="badge ' + (p.pharmacyStatus === 'Dispensed' ? 'badge-done' : 'badge-pending') + '">' + (p.pharmacyStatus || 'Pending') + '</span></div>' +
-          '<div class="readonly-box"><p><strong>Doctor Prescription:</strong> <span style="color:#0284c7; font-weight:bold;"
+          '<div class="readonly-box"><p><strong>Doctor Prescription:</strong> <span
