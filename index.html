@@ -5,49 +5,47 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NBS Poly Clinic Management System</title>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
   <style>
-    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
     body { background-color: #f1f5f9; margin: 0; padding: 12px; color: #1e293b; }
     .header { text-align: center; margin-bottom: 15px; }
     .header h1 { color: #0284c7; margin: 0; font-size: 22px; }
     .header p { color: #64748b; margin: 4px 0 0 0; font-size: 13px; }
     
     .nav-bar { display: flex; overflow-x: auto; gap: 6px; margin-bottom: 15px; padding-bottom: 4px; }
-    .nav-btn { flex: 1; min-width: 90px; padding: 8px 4px; border: none; background: #e2e8f0; color: #475569; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; text-align: center; }
+    .nav-btn { flex: 1; min-width: 90px; padding: 10px 4px; border: none; background: #e2e8f0; color: #475569; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; text-align: center; }
     .nav-btn.active { background: #0284c7; color: white; }
     
-    .user-banner { display: flex; justify-content: space-between; align-items: center; background: #e0f2fe; padding: 8px 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; font-weight: 600; color: #0369a1; }
-    .btn-logout { background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 11px; }
+    .user-banner { display: flex; justify-content: space-between; align-items: center; background: #e0f2fe; padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; font-weight: 600; color: #0369a1; }
+    .btn-logout { background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
 
-    .card { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 14px; }
+    .card { background: white; padding: 16px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 14px; }
     .card h3 { margin-top: 0; font-size: 16px; color: #0f172a; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; }
     
-    .form-group { margin-bottom: 10px; }
-    label { display: block; font-weight: 600; font-size: 12px; margin-bottom: 4px; color: #334155; }
-    input, select, textarea { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; }
+    .form-group { margin-bottom: 12px; }
+    label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 4px; color: #334155; }
+    input, select, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; }
+    input:focus, select:focus, textarea:focus { border-color: #0284c7; }
     
     .grid-vitals { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; margin-bottom: 10px; }
 
-    .btn { background: #0284c7; color: white; padding: 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; font-size: 14px; margin-top: 4px; }
+    .btn { background: #0284c7; color: white; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; font-size: 15px; margin-top: 6px; }
+    .btn:active { opacity: 0.85; }
     .btn-print { background: #475569; }
     .btn-green { background: #10b981; }
     .btn-purple { background: #8b5cf6; }
     .btn-amber { background: #d97706; }
     
-    .patient-card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 10px; background: #ffffff; }
+    .patient-card { border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; margin-bottom: 12px; background: #ffffff; }
     .patient-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px; margin-bottom: 8px; }
-    .patient-name { font-weight: bold; font-size: 14px; color: #0284c7; }
-    .patient-meta { font-size: 11px; color: #64748b; margin-top: 2px; }
+    .patient-name { font-weight: bold; font-size: 15px; color: #0284c7; }
+    .patient-meta { font-size: 12px; color: #64748b; margin-top: 2px; }
     
-    .readonly-box { background: #f8fafc; border: 1px dashed #cbd5e1; padding: 8px; border-radius: 6px; margin-bottom: 8px; font-size: 12px; }
-    .readonly-box p { margin: 3px 0; }
+    .readonly-box { background: #f8fafc; border: 1px dashed #cbd5e1; padding: 8px; border-radius: 6px; margin-bottom: 8px; font-size: 13px; }
+    .readonly-box p { margin: 4px 0; }
     
-    .action-box { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 8px; border-radius: 6px; margin-top: 6px; }
-    .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+    .action-box { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 10px; border-radius: 6px; margin-top: 6px; }
+    .badge { display: inline-block; padding: 3px 7px; border-radius: 4px; font-size: 11px; font-weight: bold; }
     .badge-pending { background: #fef3c7; color: #b45309; }
     .badge-done { background: #dcfce7; color: #15803d; }
 
@@ -68,6 +66,57 @@
       #printableParcha { display: block !important; position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 20px; }
     }
   </style>
+
+  <!-- Login Logic Script (Sabse pehle independent execute hota hai) -->
+  <script>
+    var PASSWORDS = { reg: "1111", doc: "2222", path: "3333", rad: "4444", pharm: "5555" };
+    var currentRole = null;
+
+    function handleLoginAction() {
+      var dept = document.getElementById('login_dept').value;
+      var pass = document.getElementById('login_password').value.trim();
+
+      if (PASSWORDS[dept] === pass) {
+        currentRole = dept;
+        document.getElementById('authSection').style.display = 'none';
+        document.getElementById('mainAppSection').style.display = 'block';
+
+        var labels = {
+          reg: "Registration Reception",
+          doc: "Doctor Consultation",
+          path: "Pathology Lab",
+          rad: "Radiology Portal",
+          pharm: "Pharmacy Portal"
+        };
+
+        document.getElementById('currentDeptLabel').innerText = labels[dept];
+        showPortalTab(dept);
+      } else {
+        alert("Galat Password!\nPINs:\nRegistration: 1111\nDoctor: 2222\nPathology: 3333\nRadiology: 4444\nPharmacy: 5555");
+      }
+    }
+
+    function handleLogoutAction() {
+      currentRole = null;
+      document.getElementById('login_password').value = "";
+      document.getElementById('mainAppSection').style.display = 'none';
+      document.getElementById('authSection').style.display = 'block';
+    }
+
+    function showPortalTab(tabId) {
+      var tabs = ['reg', 'doc', 'path', 'rad', 'pharm'];
+      for (var i = 0; i < tabs.length; i++) {
+        var t = tabs[i];
+        var sec = document.getElementById('section_' + t);
+        var btn = document.getElementById('btn_' + t);
+        if (sec) sec.style.display = (t === tabId) ? 'block' : 'none';
+        if (btn) {
+          if (t === tabId) btn.classList.add('active');
+          else btn.classList.remove('active');
+        }
+      }
+    }
+  </script>
 </head>
 <body>
 
@@ -93,10 +142,10 @@
 
     <div class="form-group">
       <label>Password / PIN Dalein:</label>
-      <input type="password" id="login_password" placeholder="Enter PIN">
+      <input type="password" id="login_password" placeholder="Enter PIN" onkeydown="if(event.key==='Enter') handleLoginAction()">
     </div>
 
-    <button type="button" class="btn" onclick="directLogin()">Login Karein</button>
+    <button type="button" class="btn" onclick="handleLoginAction()">Login Karein</button>
   </div>
 
   <!-- MAIN APP CONTAINER -->
@@ -104,7 +153,7 @@
 
     <div class="user-banner">
       <span>Logged In: <strong id="currentDeptLabel" style="color:#0284c7;">-</strong></span>
-      <button class="btn-logout" type="button" onclick="directLogout()">Logout</button>
+      <button class="btn-logout" type="button" onclick="handleLogoutAction()">Logout</button>
     </div>
 
     <div class="nav-bar">
@@ -286,118 +335,68 @@
     </div>
   </div>
 
+  <!-- Firebase SDKs placed safely at bottom -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
   <script>
-    // 1. SIMPLE BULLETPROOF LOGIN SYSTEM
-    var PASSWORDS = { reg: "1111", doc: "2222", path: "3333", rad: "4444", pharm: "5555" };
-    var currentRole = null;
-
-    function directLogin() {
-      var dept = document.getElementById('login_dept').value;
-      var pass = document.getElementById('login_password').value.trim();
-
-      if (PASSWORDS[dept] === pass) {
-        currentRole = dept;
-        document.getElementById('authSection').style.display = 'none';
-        document.getElementById('mainAppSection').style.display = 'block';
-
-        var labels = {
-          reg: "Registration Reception",
-          doc: "Doctor Consultation",
-          path: "Pathology Lab",
-          rad: "Radiology Portal",
-          pharm: "Pharmacy Portal"
-        };
-
-        document.getElementById('currentDeptLabel').innerText = labels[dept];
-        showPortalTab(dept);
-      } else {
-        alert("Galat Password!\nRegistration: 1111\nDoctor: 2222\nPathology: 3333\nRadiology: 4444\nPharmacy: 5555");
-      }
-    }
-
-    function directLogout() {
-      currentRole = null;
-      document.getElementById('login_password').value = "";
-      document.getElementById('mainAppSection').style.display = 'none';
-      document.getElementById('authSection').style.display = 'block';
-    }
-
-    function showPortalTab(tabId) {
-      var tabs = ['reg', 'doc', 'path', 'rad', 'pharm'];
-      for (var i = 0; i < tabs.length; i++) {
-        var t = tabs[i];
-        var sec = document.getElementById('section_' + t);
-        var btn = document.getElementById('btn_' + t);
-        if (sec) sec.style.display = (t === tabId) ? 'block' : 'none';
-        if (btn) {
-          if (t === tabId) btn.classList.add('active');
-          else btn.classList.remove('active');
-        }
-      }
-    }
-
-    // 2. FIREBASE DATABASE CONNECTION
     var db = null;
     var cachedPatients = [];
 
-    try {
-      var firebaseConfig = {
-        apiKey: "AIzaSyBeSB_UJsWo1hYav9VCk3Srk67p4",
-        authDomain: "nbs-poly-clinic.firebaseapp.com",
-        projectId: "nbs-poly-clinic",
-        storageBucket: "nbs-poly-clinic.appspot.com",
-        messagingSenderId: "836155988202",
-        appId: "1:836155988202:web:0419cb6ee23fb1",
-        measurementId: "G-6FKEMC96WB"
-      };
+    // Local Storage backup helper
+    function getStoredPatients() {
+      try {
+        return JSON.parse(localStorage.getItem('nbs_patients') || '[]');
+      } catch(e) { return []; }
+    }
 
-      firebase.initializeApp(firebaseConfig);
-      db = firebase.firestore();
+    function saveStoredPatients(list) {
+      try {
+        localStorage.setItem('nbs_patients', JSON.stringify(list));
+      } catch(e) {}
+    }
 
-      db.collection("patients").onSnapshot(function(snapshot) {
-        cachedPatients = [];
-        var docSelect = document.getElementById('doc_patient_select');
-        var selectedVal = docSelect ? docSelect.value : "";
-        if (docSelect) docSelect.innerHTML = '<option value="">-- Select Patient --</option>';
+    function renderPatientsList(patients) {
+      cachedPatients = patients;
+      var docSelect = document.getElementById('doc_patient_select');
+      var selectedVal = docSelect ? docSelect.value : "";
+      if (docSelect) docSelect.innerHTML = '<option value="">-- Select Patient --</option>';
 
-        var pathHtml = '';
-        var radHtml = '';
-        var pharmHtml = '';
+      var pathHtml = '';
+      var radHtml = '';
+      var pharmHtml = '';
 
-        if (snapshot.empty) {
-          document.getElementById('pathology_records_list').innerHTML = '<p style="color:#64748b;">Abhi tak koi patient register nahi hua hai.</p>';
-          document.getElementById('radiology_records_list').innerHTML = '<p style="color:#64748b;">Abhi tak koi patient register nahi hua hai.</p>';
-          document.getElementById('pharmacy_records_list').innerHTML = '<p style="color:#64748b;">Abhi tak koi patient register nahi hua hai.</p>';
-          return;
-        }
+      if (!patients || patients.length === 0) {
+        document.getElementById('pathology_records_list').innerHTML = '<p style="color:#64748b;">Abhi tak koi patient register nahi hua hai.</p>';
+        document.getElementById('radiology_records_list').innerHTML = '<p style="color:#64748b;">Abhi tak koi patient register nahi hua hai.</p>';
+        document.getElementById('pharmacy_records_list').innerHTML = '<p style="color:#64748b;">Abhi tak koi patient register nahi hua hai.</p>';
+        return;
+      }
 
-        snapshot.forEach(function(doc) {
-          var p = doc.data();
-          cachedPatients.push(p);
+      for (var i = 0; i < patients.length; i++) {
+        var p = patients[i];
+        if (docSelect) docSelect.innerHTML += '<option value="' + p.mobile + '">' + p.name + ' (' + p.mobile + ')</option>';
 
-          if (docSelect) docSelect.innerHTML += '<option value="' + p.mobile + '">' + p.name + ' (' + p.mobile + ')</option>';
+        var pathTestsText = p.pathologyTests ? p.pathologyTests : '<span style="color:#94a3b8; font-style:italic;">No Test Prescribed</span>';
+        pathHtml += '<div class="patient-card">' +
+          '<div class="patient-header"><div><span class="patient-name">' + p.name + '</span> (' + p.gender + ', ' + p.age + ' yrs)<div class="patient-meta">Mob: ' + p.mobile + ' | BP: ' + (p.bp || '-') + ' | Sugar: ' + (p.sugar || '-') + '</div></div>' +
+          '<span class="badge ' + (p.pathologyStatus === 'Completed' ? 'badge-done' : 'badge-pending') + '">' + (p.pathologyStatus || 'Pending') + '</span></div>' +
+          '<div class="readonly-box"><p><strong>Recommended Test:</strong> <span style="color:#d97706; font-weight:bold;">' + pathTestsText + '</span></p>' +
+          (p.pathologyReport ? '<p style="color:#059669;"><strong>Uploaded Lab Report:</strong> ' + p.pathologyReport + '</p>' : '') + '</div>' +
+          '<div class="action-box"><input type="text" id="path_res_' + p.mobile + '" placeholder="e.g. Hemoglobin 12.5, TLC Normal" style="margin-bottom:6px;">' +
+          '<button class="btn btn-amber" type="button" onclick="savePathReport(\'' + p.mobile + '\')">Upload Lab Report</button></div></div>';
 
-          var pathTestsText = p.pathologyTests ? p.pathologyTests : '<span style="color:#94a3b8; font-style:italic;">No Test Prescribed</span>';
-          pathHtml += '<div class="patient-card">' +
-            '<div class="patient-header"><div><span class="patient-name">' + p.name + '</span> (' + p.gender + ', ' + p.age + ' yrs)<div class="patient-meta">Mob: ' + p.mobile + ' | BP: ' + (p.bp || '-') + ' | Sugar: ' + (p.sugar || '-') + '</div></div>' +
-            '<span class="badge ' + (p.pathologyStatus === 'Completed' ? 'badge-done' : 'badge-pending') + '">' + (p.pathologyStatus || 'Pending') + '</span></div>' +
-            '<div class="readonly-box"><p><strong>Recommended Test:</strong> <span style="color:#d97706; font-weight:bold;">' + pathTestsText + '</span></p>' +
-            (p.pathologyReport ? '<p style="color:#059669;"><strong>Uploaded Lab Report:</strong> ' + p.pathologyReport + '</p>' : '') + '</div>' +
-            '<div class="action-box"><input type="text" id="path_res_' + p.mobile + '" placeholder="e.g. Hemoglobin 12.5, TLC Normal" style="margin-bottom:6px;">' +
-            '<button class="btn btn-amber" type="button" onclick="savePathReport(\'' + p.mobile + '\')">Upload Lab Report</button></div></div>';
+        var radTestsText = p.radiologyTests ? p.radiologyTests : '<span style="color:#94a3b8; font-style:italic;">No X-Ray Prescribed</span>';
+        radHtml += '<div class="patient-card">' +
+          '<div class="patient-header"><div><span class="patient-name">' + p.name + '</span> (' + p.gender + ', ' + p.age + ' yrs)<div class="patient-meta">Mob: ' + p.mobile + '</div></div>' +
+          '<span class="badge ' + (p.radiologyStatus === 'Completed' ? 'badge-done' : 'badge-pending') + '">' + (p.radiologyStatus || 'Pending') + '</span></div>' +
+          '<div class="readonly-box"><p><strong>Advised X-Ray / Scan:</strong> <span style="color:#8b5cf6; font-weight:bold;">' + radTestsText + '</span></p>' +
+          (p.radiologyReport ? '<p style="color:#059669;"><strong>Radiology Report:</strong> ' + p.radiologyReport + '</p>' : '') + '</div>' +
+          '<div class="action-box"><input type="text" id="rad_res_' + p.mobile + '" placeholder="Scan report impression..." style="margin-bottom:6px;">' +
+          '<button class="btn btn-purple" type="button" onclick="saveRadReport(\'' + p.mobile + '\')">Submit Scan Report</button></div></div>';
 
-          var radTestsText = p.radiologyTests ? p.radiologyTests : '<span style="color:#94a3b8; font-style:italic;">No X-Ray Prescribed</span>';
-          radHtml += '<div class="patient-card">' +
-            '<div class="patient-header"><div><span class="patient-name">' + p.name + '</span> (' + p.gender + ', ' + p.age + ' yrs)<div class="patient-meta">Mob: ' + p.mobile + '</div></div>' +
-            '<span class="badge ' + (p.radiologyStatus === 'Completed' ? 'badge-done' : 'badge-pending') + '">' + (p.radiologyStatus || 'Pending') + '</span></div>' +
-            '<div class="readonly-box"><p><strong>Advised X-Ray / Scan:</strong> <span style="color:#8b5cf6; font-weight:bold;">' + radTestsText + '</span></p>' +
-            (p.radiologyReport ? '<p style="color:#059669;"><strong>Radiology Report:</strong> ' + p.radiologyReport + '</p>' : '') + '</div>' +
-            '<div class="action-box"><input type="text" id="rad_res_' + p.mobile + '" placeholder="Scan report impression..." style="margin-bottom:6px;">' +
-            '<button class="btn btn-purple" type="button" onclick="saveRadReport(\'' + p.mobile + '\')">Submit Scan Report</button></div></div>';
-
-          var medsText = p.medicines ? p.medicines : '<span style="color:#94a3b8; font-style:italic;">No Medicines Prescribed</span>';
-          pharmHtml += '<div class="patient-card">' +
-            '<div class="patient-header"><div><span class="patient-name">' + p.name + '</span> (' + p.gender + ', ' + p.age + ' yrs)<div class="patient-meta">Mob: ' + p.mobile + '</div></div>' +
-            '<span class="badge ' + (p.pharmacyStatus === 'Dispensed' ? 'badge-done' : 'badge-pending') + '">' + (p.pharmacyStatus || 'Pending') + '</span></div>' +
-            '<div class="readonly-box"><p><strong>Doctor Prescription:</strong> <span style="color:#0284c7; font-weight:bold;">' + medsText + '</span></p></div>' +
-            '<div class="action-box"><butt
+        var medsText = p.medicines ? p.medicines : '<span style="color:#94a3b8; font-style:italic;">No Medicines Prescribed</span>';
+        pharmHtml += '<div class="patient-card">' +
+          '<div class="patient-header"><div><span class="patient-name">' + p.name + '</span> (' + p.gender + ', ' + p.age + ' yrs)<div class="patient-meta">Mob: ' + p.mobile + '</div></div>' +
+          '<span class="badge ' + (p.pharmacyStatus === 'Dispensed' ? 'badge-done' : 'badge-pending') + '">' + (p.pharmacyStatus || 'Pending') + '</span></div>' +
+          '<div class="readonly-box"><p><strong>Doctor Prescription:</strong> <span style="color:#0284c7; font-weight:bold;"
