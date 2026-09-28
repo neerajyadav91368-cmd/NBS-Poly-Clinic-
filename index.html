@@ -7,50 +7,81 @@
 <title>NBS Poly Clinic</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f6f8fb;color:#1a202c;padding-bottom:70px}
-header{background:#1463d9;color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f6f8fb;color:#1a202c;padding-bottom:75px}
+header{background:#1463d9;color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
 .brand h1{margin:0;font-size:18px;font-weight:700}
 .brand p{margin:2px 0 0;font-size:11px;opacity:0.9}
 .container{padding:14px;max-width:600px;margin:auto}
 .card{background:#fff;border-radius:14px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);margin-bottom:14px}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.stat{text-align:center;padding:12px;background:#f0f5ff;border-radius:10px}
-.stat b{font-size:24px;color:#1463d9;display:block;margin-top:4px}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.stat{text-align:center;padding:10px;background:#f0f5ff;border-radius:10px}
+.stat b{font-size:22px;color:#1463d9;display:block;margin-top:4px}
 label{font-size:12px;font-weight:600;color:#4a5568;display:block;margin:8px 0 4px}
-input,select,textarea{width:100%;padding:12px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px;background:#fff;outline:none}
+input,select,textarea{width:100%;padding:11px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px;background:#fff;outline:none}
 input:focus,textarea:focus{border-color:#1463d9}
 textarea{min-height:70px;resize:vertical}
-.btn{width:100%;border:0;border-radius:8px;padding:13px;background:#1463d9;color:#fff;font-size:15px;font-weight:bold;cursor:pointer;margin-top:10px}
+.btn{width:100%;border:0;border-radius:8px;padding:12px;background:#1463d9;color:#fff;font-size:14px;font-weight:bold;cursor:pointer;margin-top:10px}
 .btn:active{background:#0e4bb5}
 .btn.secondary{background:#edf2f7;color:#2d3748;margin-top:8px}
+.btn.danger{background:#e53e3e;color:#fff;padding:6px 12px;width:auto;margin:0;font-size:12px}
 
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:60px;background:#fff;display:flex;border-top:1px solid #e2e8f0;z-index:100}
-.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;color:#718096;border:0;background:transparent;cursor:pointer}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:65px;background:#fff;display:flex;border-top:1px solid #e2e8f0;z-index:100}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;color:#718096;border:0;background:transparent;cursor:pointer;padding:4px 0}
 .nav-item.active{color:#1463d9;font-weight:bold}
 .nav-item span{font-size:18px;margin-bottom:2px}
 
-.hidden{display:none}
+.hidden{display:none !important}
 table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
 th,td{padding:8px;border-bottom:1px solid #edf2f7;text-align:left}
+.role-badge{font-size:11px;background:#e2e8f0;padding:4px 8px;border-radius:12px;font-weight:600}
 </style>
 </head>
 <body>
 
+<!-- LOGIN MODAL SCREEN -->
+<div id="loginOverlay" style="position:fixed;inset:0;background:#f6f8fb;z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;">
+  <div class="card" style="width:100%;max-width:380px;text-align:center;">
+    <h2 style="margin:0 0 4px;color:#1463d9">NBS Poly Clinic</h2>
+    <p style="font-size:12px;color:#718096;margin-bottom:20px">Staff Access Portal</p>
+    
+    <label style="text-align:left">Select Role</label>
+    <select id="userRole">
+      <option value="doctor">Doctor / Admin</option>
+      <option value="pathology">Pathology Lab</option>
+      <option value="pharmacy">Pharmacy</option>
+      <option value="radiology">X-Ray & Ultrasound</option>
+    </select>
+    
+    <label style="text-align:left;margin-top:10px">Access PIN</label>
+    <input id="userPin" type="password" placeholder="Enter PIN">
+    
+    <button class="btn" onclick="handleLogin()">Login to Portal</button>
+    <div style="font-size:11px;color:#718096;margin-top:14px;text-align:left;background:#edf2f7;padding:8px;border-radius:6px">
+      <b>Default PINs:</b><br>
+      • Doctor: 1111 | • Pathology: 2222<br>
+      • Pharmacy: 3333 | • Radiology: 4444
+    </div>
+  </div>
+</div>
+
 <header>
   <div class="brand">
     <h1>NBS Poly Clinic</h1>
-    <p>Sadhanganj Sewaith Road, Soraon | 9305332165</p>
+    <p id="roleDisplay">Logged in: Doctor</p>
   </div>
+  <button class="btn danger" onclick="logout()">Logout</button>
 </header>
 
 <div class="container">
-  <!-- DASHBOARD -->
+  <!-- 1. DASHBOARD (Doctor Only) -->
   <section id="dashboard">
     <div class="card">
-      <h3 style="margin-top:0">Today's Overview</h3>
+      <h3 style="margin-top:0">Clinic Overview</h3>
       <div class="stats">
-        <div class="stat">Total Patients<b id="patientCount">0</b></div>
-        <div class="stat">Total Visits<b id="visitCount">0</b></div>
+        <div class="stat">Patients<b id="patientCount">0</b></div>
+        <div class="stat">Visits<b id="visitCount">0</b></div>
+        <div class="stat">Lab Tests<b id="reportCount">0</b></div>
+        <div class="stat">Pharmacy<b id="dispenseCount">0</b></div>
       </div>
     </div>
     <div class="card">
@@ -59,7 +90,7 @@ th,td{padding:8px;border-bottom:1px solid #edf2f7;text-align:left}
     </div>
   </section>
 
-  <!-- PATIENT REGISTRATION -->
+  <!-- 2. PATIENTS (Doctor Only) -->
   <section id="patients" class="hidden">
     <div class="card">
       <h3 style="margin-top:0">Patient Registration</h3>
@@ -68,14 +99,8 @@ th,td{padding:8px;border-bottom:1px solid #edf2f7;text-align:left}
       <label>Mobile Number *</label>
       <input id="pmobile" type="tel" placeholder="10-digit number">
       <div style="display:flex;gap:10px">
-        <div style="flex:1">
-          <label>Age</label>
-          <input id="page" type="number" placeholder="Age">
-        </div>
-        <div style="flex:1">
-          <label>Gender</label>
-          <select id="pgender"><option>Male</option><option>Female</option><option>Other</option></select>
-        </div>
+        <div style="flex:1"><label>Age</label><input id="page" type="number" placeholder="Age"></div>
+        <div style="flex:1"><label>Gender</label><select id="pgender"><option>Male</option><option>Female</option><option>Other</option></select></div>
       </div>
       <label>Address</label>
       <textarea id="paddress" placeholder="Village / Area"></textarea>
@@ -89,7 +114,7 @@ th,td{padding:8px;border-bottom:1px solid #edf2f7;text-align:left}
     </div>
   </section>
 
-  <!-- CLINICAL VISIT -->
+  <!-- 3. CLINICAL VISIT (Doctor Only) -->
   <section id="visit" class="hidden">
     <div class="card">
       <h3 style="margin-top:0">New Clinical Visit</h3>
@@ -99,41 +124,165 @@ th,td{padding:8px;border-bottom:1px solid #edf2f7;text-align:left}
       <input id="vdate" type="date">
       <label>Chief Complaints</label>
       <input id="vcc" placeholder="Fever, cough, pain...">
-      
       <div style="display:flex;gap:10px">
         <div style="flex:1"><label>BP</label><input id="vbp" placeholder="120/80"></div>
         <div style="flex:1"><label>Pulse</label><input id="vpulse" placeholder="72"></div>
       </div>
-      <div style="display:flex;gap:10px">
-        <div style="flex:1"><label>Temp</label><input id="vtemp" placeholder="98.6 F"></div>
-        <div style="flex:1"><label>Sugar</label><input id="vbs" placeholder="RBS / FBS"></div>
-      </div>
-
       <label>Diagnosis</label>
-      <textarea id="vdiag" placeholder="Provisional / Final Diagnosis"></textarea>
+      <textarea id="vdiag" placeholder="Diagnosis"></textarea>
       <label>Prescription (Rx)</label>
       <textarea id="vrx" placeholder="Medicine — Dose — Days"></textarea>
+      <label>Advised Tests / Scans</label>
+      <textarea id="vinv" placeholder="CBC, USG Whole Abdomen, X-Ray Chest..."></textarea>
       <button class="btn" onclick="saveVisit()">Save Visit</button>
+    </div>
+  </section>
+
+  <!-- 4. PATHOLOGY SECTION -->
+  <section id="pathology" class="hidden">
+    <div class="card">
+      <h3 style="margin-top:0">🧪 Pathology Lab Reports</h3>
+      <label>Patient ID / Mobile *</label>
+      <input id="labPatient" placeholder="Enter Patient ID or Mobile">
+      <label>Test Name</label>
+      <input id="labTest" placeholder="CBC, Blood Sugar, Lipid Profile, etc.">
+      <label>Test Values / Result Summary</label>
+      <textarea id="labNotes" placeholder="Enter findings & values"></textarea>
+      <label>Upload Lab Report (PDF / Image)</label>
+      <input type="file" id="labFile" accept="image/*,.pdf" style="padding:8px">
+      <button class="btn" onclick="saveLabReport()">Upload Lab Report</button>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0">Pathology Records</h3>
+      <div id="labList" style="font-size:13px;color:#4a5568">Koi report upload nahi hui.</div>
+    </div>
+  </section>
+
+  <!-- 5. PHARMACY SECTION -->
+  <section id="pharmacy" class="hidden">
+    <div class="card">
+      <h3 style="margin-top:0">💊 Pharmacy Dispensing & Bill</h3>
+      <label>Patient ID / Mobile *</label>
+      <input id="pharmaPatient" placeholder="Enter Patient ID or Mobile">
+      <label>Medicines Dispensed</label>
+      <textarea id="pharmaNotes" placeholder="Tab Paracetamol - 10, Syp Amox - 1 bottle"></textarea>
+      <label>Bill Amount (₹)</label>
+      <input id="pharmaAmount" type="number" placeholder="Enter total amount">
+      <label>Upload Pharmacy Bill Receipt (Photo)</label>
+      <input type="file" id="pharmaBillFile" accept="image/*,.pdf" style="padding:8px">
+      <button class="btn" onclick="savePharmacy()">Save & Upload Bill</button>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0">Dispensed & Bills History</h3>
+      <div id="pharmaList" style="font-size:13px;color:#4a5568">Koi bill record nahi hai.</div>
+    </div>
+  </section>
+
+  <!-- 6. X-RAY & ULTRASOUND SECTION -->
+  <section id="radiology" class="hidden">
+    <div class="card">
+      <h3 style="margin-top:0">🩻 X-Ray & Ultrasound Portal</h3>
+      <label>Patient ID / Mobile *</label>
+      <input id="radPatient" placeholder="Enter Patient ID or Mobile">
+      <label>Scan Type</label>
+      <select id="radType">
+        <option>Ultrasound (USG)</option>
+        <option>X-Ray</option>
+        <option>ECG</option>
+      </select>
+      <label>Findings / Impression</label>
+      <textarea id="radNotes" placeholder="Radiologist impressions / findings..."></textarea>
+      <label>Upload Scan Film / Report (Photo / PDF)</label>
+      <input type="file" id="radFile" accept="image/*,.pdf" style="padding:8px">
+      <button class="btn" onclick="saveRadiology()">Upload Scan Report</button>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0">Radiology Records</h3>
+      <div id="radList" style="font-size:13px;color:#4a5568">Koi scan report upload nahi hui.</div>
     </div>
   </section>
 </div>
 
-<!-- Mobile Bottom Navigation -->
-<div class="bottom-nav">
-  <button class="nav-item active" onclick="switchTab('dashboard', this)"><span>🏠</span>Home</button>
-  <button class="nav-item" onclick="switchTab('patients', this)"><span>👤</span>Patients</button>
-  <button class="nav-item" onclick="switchTab('visit', this)"><span>🩺</span>Visit</button>
+<!-- Bottom Navigation Bar (Dynamic as per Role) -->
+<div class="bottom-nav" id="bottomNav">
+  <!-- Tabs populated dynamically based on role -->
 </div>
 
 <script>
 const DB_KEY = 'nbs_clinic_db';
-let db = JSON.parse(localStorage.getItem(DB_KEY) || '{"patients":[],"visits":[]}');
-document.getElementById('vdate').valueAsDate = new Date();
+let db = JSON.parse(localStorage.getItem(DB_KEY) || '{"patients":[],"visits":[],"reports":[],"pharmacy":[],"radiology":[]}');
+if(!db.reports) db.reports = [];
+if(!db.pharmacy) db.pharmacy = [];
+if(!db.radiology) db.radiology = [];
 
-function syncDB(){
-  localStorage.setItem(DB_KEY, JSON.stringify(db));
-  document.getElementById('patientCount').innerText = db.patients.length;
-  document.getElementById('visitCount').innerText = db.visits.length;
+const PINS = {
+  doctor: '1111',
+  pathology: '2222',
+  pharmacy: '3333',
+  radiology: '4444'
+};
+
+let currentRole = localStorage.getItem('nbs_active_role') || null;
+
+function handleLogin(){
+  const role = document.getElementById('userRole').value;
+  const pin = document.getElementById('userPin').value.trim();
+  
+  if(pin === PINS[role]){
+    currentRole = role;
+    localStorage.setItem('nbs_active_role', role);
+    document.getElementById('loginOverlay').classList.add('hidden');
+    document.getElementById('userPin').value = '';
+    initAppForRole();
+  } else {
+    alert('Galat PIN! Kripya sahi PIN daalein.');
+  }
+}
+
+function logout(){
+  localStorage.removeItem('nbs_active_role');
+  currentRole = null;
+  document.getElementById('loginOverlay').classList.remove('hidden');
+}
+
+function initAppForRole(){
+  const roleDisplay = document.getElementById('roleDisplay');
+  const bottomNav = document.getElementById('bottomNav');
+  
+  if(currentRole === 'doctor'){
+    roleDisplay.innerText = 'Doctor / Admin Portal';
+    bottomNav.innerHTML = `
+      <button class="nav-item active" onclick="switchTab('dashboard', this)"><span>🏠</span>Home</button>
+      <button class="nav-item" onclick="switchTab('patients', this)"><span>👤</span>Patients</button>
+      <button class="nav-item" onclick="switchTab('visit', this)"><span>🩺</span>Visit</button>
+      <button class="nav-item" onclick="switchTab('pathology', this)"><span>🧪</span>Lab</button>
+      <button class="nav-item" onclick="switchTab('pharmacy', this)"><span>💊</span>Pharma</button>
+      <button class="nav-item" onclick="switchTab('radiology', this)"><span>🩻</span>Scan</button>
+    `;
+    switchTab('dashboard');
+  } else if(currentRole === 'pathology'){
+    roleDisplay.innerText = 'Pathology Lab Section';
+    bottomNav.innerHTML = `
+      <button class="nav-item active" onclick="switchTab('pathology', this)"><span>🧪</span>Lab Reports</button>
+    `;
+    switchTab('pathology');
+  } else if(currentRole === 'pharmacy'){
+    roleDisplay.innerText = 'Pharmacy Dispensing Section';
+    bottomNav.innerHTML = `
+      <button class="nav-item active" onclick="switchTab('pharmacy', this)"><span>💊</span>Pharmacy & Bills</button>
+    `;
+    switchTab('pharmacy');
+  } else if(currentRole === 'radiology'){
+    roleDisplay.innerText = 'X-Ray & Ultrasound Section';
+    bottomNav.innerHTML = `
+      <button class="nav-item active" onclick="switchTab('radiology', this)"><span>🩻</span>X-Ray / USG</button>
+    `;
+    switchTab('radiology');
+  }
+  syncDB();
 }
 
 function switchTab(id, btn){
@@ -142,11 +291,22 @@ function switchTab(id, btn){
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   if(btn) btn.classList.add('active');
   if(id === 'patients') renderPatients();
+  if(id === 'pathology') renderLab();
+  if(id === 'pharmacy') renderPharma();
+  if(id === 'radiology') renderRad();
+}
+
+function syncDB(){
+  localStorage.setItem(DB_KEY, JSON.stringify(db));
+  if(document.getElementById('patientCount')) document.getElementById('patientCount').innerText = db.patients.length;
+  if(document.getElementById('visitCount')) document.getElementById('visitCount').innerText = db.visits.length;
+  if(document.getElementById('reportCount')) document.getElementById('reportCount').innerText = db.reports.length;
+  if(document.getElementById('dispenseCount')) document.getElementById('dispenseCount').innerText = db.pharmacy.length;
 }
 
 function addPatient(){
   let name = pname.value.trim(), mobile = pmobile.value.trim();
-  if(!name || !mobile) return alert('Name aur mobile number zaroori hai.');
+  if(!name || !mobile) return alert('Name aur mobile zaroori hai.');
   let p = { id: 'NBS-' + Date.now().toString().slice(-5), name, mobile, age: page.value, gender: pgender.value, address: paddress.value };
   db.patients.unshift(p);
   syncDB();
@@ -169,15 +329,69 @@ function saveVisit(){
   if(!vpatient.value.trim()) return alert('Patient ID ya Mobile zaroori hai.');
   db.visits.push({
     patient: vpatient.value.trim(), date: vdate.value, cc: vcc.value,
-    bp: vbp.value, pulse: vpulse.value, temp: vtemp.value, bs: vbs.value,
-    diagnosis: vdiag.value, rx: vrx.value
+    bp: vbp.value, pulse: vpulse.value, diagnosis: vdiag.value, rx: vrx.value, inv: vinv.value
   });
   syncDB();
-  alert('Visit save ho gayi!');
-  ['vpatient','vcc','vbp','vpulse','vtemp','vbs','vdiag','vrx'].forEach(i => document.getElementById(i).value = '');
+  alert('Clinical visit save ho gayi!');
+  ['vpatient','vcc','vbp','vpulse','vdiag','vrx','vinv'].forEach(i => document.getElementById(i).value = '');
 }
 
-syncDB();
+function saveLabReport(){
+  let pid = labPatient.value.trim(), test = labTest.value.trim();
+  if(!pid || !test) return alert('Patient ID aur Test name required hai.');
+  db.reports.unshift({ patient: pid, test: test, notes: labNotes.value, date: new Date().toLocaleDateString() });
+  syncDB();
+  ['labPatient','labTest','labNotes','labFile'].forEach(i => document.getElementById(i).value = '');
+  renderLab();
+  alert('Lab report save ho gayi!');
+}
+
+function renderLab(){
+  if(!db.reports.length){ labList.innerHTML = 'Koi report upload nahi hui.'; return; }
+  let html = '<table><tr><th>ID</th><th>Test</th><th>Date</th></tr>';
+  db.reports.forEach(r => { html += `<tr><td><b>${r.patient}</b></td><td>${r.test}</td><td>${r.date}</td></tr>`; });
+  labList.innerHTML = html + '</table>';
+}
+
+function savePharmacy(){
+  let pid = pharmaPatient.value.trim(), notes = pharmaNotes.value.trim(), amt = pharmaAmount.value.trim();
+  if(!pid) return alert('Patient ID required hai.');
+  db.pharmacy.unshift({ patient: pid, notes: notes, amount: amt ? '₹' + amt : '-', date: new Date().toLocaleDateString() });
+  syncDB();
+  ['pharmaPatient','pharmaNotes','pharmaAmount','pharmaBillFile'].forEach(i => document.getElementById(i).value = '');
+  renderPharma();
+  alert('Pharmacy dispensing aur bill save ho gaya!');
+}
+
+function renderPharma(){
+  if(!db.pharmacy.length){ pharmaList.innerHTML = 'Koi record nahi hai.'; return; }
+  let html = '<table><tr><th>ID</th><th>Medicines</th><th>Bill</th></tr>';
+  db.pharmacy.forEach(p => { html += `<tr><td><b>${p.patient}</b></td><td>${p.notes}</td><td><b>${p.amount}</b></td></tr>`; });
+  pharmaList.innerHTML = html + '</table>';
+}
+
+function saveRadiology(){
+  let pid = radPatient.value.trim(), type = radType.value;
+  if(!pid) return alert('Patient ID required hai.');
+  db.radiology.unshift({ patient: pid, type: type, notes: radNotes.value, date: new Date().toLocaleDateString() });
+  syncDB();
+  ['radPatient','radNotes','radFile'].forEach(i => document.getElementById(i).value = '');
+  renderRad();
+  alert('Scan report save ho gayi!');
+}
+
+function renderRad(){
+  if(!db.radiology.length){ radList.innerHTML = 'Koi scan report upload nahi hui.'; return; }
+  let html = '<table><tr><th>ID</th><th>Type</th><th>Findings</th></tr>';
+  db.radiology.forEach(r => { html += `<tr><td><b>${r.patient}</b></td><td>${r.type}</td><td>${r.notes || '-'}</td></tr>`; });
+  radList.innerHTML = html + '</table>';
+}
+
+// Auto-check existing session
+if(currentRole){
+  document.getElementById('loginOverlay').classList.add('hidden');
+  initAppForRole();
+}
 </script>
 </body>
 </html>
