@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<meta name="theme-color" content="#1463d9">
+<title>NBS Poly Clinic</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f6f8fb;color:#1a202c;padding-bottom:70px}
+header{background:#1463d9;color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.brand h1{margin:0;font-size:18px;font-weight:700}
+.brand p{margin:2px 0 0;font-size:11px;opacity:0.9}
+.container{padding:14px;max-width:600px;margin:auto}
+.card{background:#fff;border-radius:14px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);margin-bottom:14px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stat{text-align:center;padding:12px;background:#f0f5ff;border-radius:10px}
+.stat b{font-size:24px;color:#1463d9;display:block;margin-top:4px}
+label{font-size:12px;font-weight:600;color:#4a5568;display:block;margin:8px 0 4px}
+input,select,textarea{width:100%;padding:12px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px;background:#fff;outline:none}
+input:focus,textarea:focus{border-color:#1463d9}
+textarea{min-height:70px;resize:vertical}
+.btn{width:100%;border:0;border-radius:8px;padding:13px;background:#1463d9;color:#fff;font-size:15px;font-weight:bold;cursor:pointer;margin-top:10px}
+.btn:active{background:#0e4bb5}
+.btn.secondary{background:#edf2f7;color:#2d3748;margin-top:8px}
+
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:60px;background:#fff;display:flex;border-top:1px solid #e2e8f0;z-index:100}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;color:#718096;border:0;background:transparent;cursor:pointer}
+.nav-item.active{color:#1463d9;font-weight:bold}
+.nav-item span{font-size:18px;margin-bottom:2px}
+
+.hidden{display:none}
+table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
+th,td{padding:8px;border-bottom:1px solid #edf2f7;text-align:left}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <h1>NBS Poly Clinic</h1>
+    <p>Sadhanganj Sewaith Road, Soraon | 9305332165</p>
+  </div>
+</header>
+
+<div class="container">
+  <!-- DASHBOARD -->
+  <section id="dashboard">
+    <div class="card">
+      <h3 style="margin-top:0">Today's Overview</h3>
+      <div class="stats">
+        <div class="stat">Total Patients<b id="patientCount">0</b></div>
+        <div class="stat">Total Visits<b id="visitCount">0</b></div>
+      </div>
+    </div>
+    <div class="card">
+      <button class="btn" onclick="switchTab('patients')">➕ New Patient Register</button>
+      <button class="btn secondary" onclick="switchTab('visit')">🩺 Add Clinical Visit</button>
+    </div>
+  </section>
+
+  <!-- PATIENT REGISTRATION -->
+  <section id="patients" class="hidden">
+    <div class="card">
+      <h3 style="margin-top:0">Patient Registration</h3>
+      <label>Patient Name *</label>
+      <input id="pname" placeholder="Full Name">
+      <label>Mobile Number *</label>
+      <input id="pmobile" type="tel" placeholder="10-digit number">
+      <div style="display:flex;gap:10px">
+        <div style="flex:1">
+          <label>Age</label>
+          <input id="page" type="number" placeholder="Age">
+        </div>
+        <div style="flex:1">
+          <label>Gender</label>
+          <select id="pgender"><option>Male</option><option>Female</option><option>Other</option></select>
+        </div>
+      </div>
+      <label>Address</label>
+      <textarea id="paddress" placeholder="Village / Area"></textarea>
+      <button class="btn" onclick="addPatient()">Save Patient</button>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0">Search Records</h3>
+      <input id="search" oninput="renderPatients()" placeholder="Search name or mobile...">
+      <div id="patientTable" style="overflow-x:auto;"></div>
+    </div>
+  </section>
+
+  <!-- CLINICAL VISIT -->
+  <section id="visit" class="hidden">
+    <div class="card">
+      <h3 style="margin-top:0">New Clinical Visit</h3>
+      <label>Patient ID / Mobile *</label>
+      <input id="vpatient" placeholder="Enter ID or mobile">
+      <label>Visit Date</label>
+      <input id="vdate" type="date">
+      <label>Chief Complaints</label>
+      <input id="vcc" placeholder="Fever, cough, pain...">
+      
+      <div style="display:flex;gap:10px">
+        <div style="flex:1"><label>BP</label><input id="vbp" placeholder="120/80"></div>
+        <div style="flex:1"><label>Pulse</label><input id="vpulse" placeholder="72"></div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <div style="flex:1"><label>Temp</label><input id="vtemp" placeholder="98.6 F"></div>
+        <div style="flex:1"><label>Sugar</label><input id="vbs" placeholder="RBS / FBS"></div>
+      </div>
+
+      <label>Diagnosis</label>
+      <textarea id="vdiag" placeholder="Provisional / Final Diagnosis"></textarea>
+      <label>Prescription (Rx)</label>
+      <textarea id="vrx" placeholder="Medicine — Dose — Days"></textarea>
+      <button class="btn" onclick="saveVisit()">Save Visit</button>
+    </div>
+  </section>
+</div>
+
+<!-- Mobile Bottom Navigation -->
+<div class="bottom-nav">
+  <button class="nav-item active" onclick="switchTab('dashboard', this)"><span>🏠</span>Home</button>
+  <button class="nav-item" onclick="switchTab('patients', this)"><span>👤</span>Patients</button>
+  <button class="nav-item" onclick="switchTab('visit', this)"><span>🩺</span>Visit</button>
+</div>
+
+<script>
+const DB_KEY = 'nbs_clinic_db';
+let db = JSON.parse(localStorage.getItem(DB_KEY) || '{"patients":[],"visits":[]}');
+document.getElementById('vdate').valueAsDate = new Date();
+
+function syncDB(){
+  localStorage.setItem(DB_KEY, JSON.stringify(db));
+  document.getElementById('patientCount').innerText = db.patients.length;
+  document.getElementById('visitCount').innerText = db.visits.length;
+}
+
+function switchTab(id, btn){
+  document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  if(id === 'patients') renderPatients();
+}
+
+function addPatient(){
+  let name = pname.value.trim(), mobile = pmobile.value.trim();
+  if(!name || !mobile) return alert('Name aur mobile number zaroori hai.');
+  let p = { id: 'NBS-' + Date.now().toString().slice(-5), name, mobile, age: page.value, gender: pgender.value, address: paddress.value };
+  db.patients.unshift(p);
+  syncDB();
+  ['pname','pmobile','page','paddress'].forEach(i => document.getElementById(i).value = '');
+  renderPatients();
+  alert('Patient registered! ID: ' + p.id);
+}
+
+function renderPatients(){
+  let q = (search.value || '').toLowerCase();
+  let filtered = db.patients.filter(p => (p.name + p.mobile + p.id).toLowerCase().includes(q));
+  let html = '<table><tr><th>ID</th><th>Name</th><th>Mobile</th></tr>';
+  filtered.forEach(p => {
+    html += `<tr><td><b>${p.id}</b></td><td>${p.name} (${p.gender[0]}/${p.age||'-'})</td><td>${p.mobile}</td></tr>`;
+  });
+  patientTable.innerHTML = html + '</table>';
+}
+
+function saveVisit(){
+  if(!vpatient.value.trim()) return alert('Patient ID ya Mobile zaroori hai.');
+  db.visits.push({
+    patient: vpatient.value.trim(), date: vdate.value, cc: vcc.value,
+    bp: vbp.value, pulse: vpulse.value, temp: vtemp.value, bs: vbs.value,
+    diagnosis: vdiag.value, rx: vrx.value
+  });
+  syncDB();
+  alert('Visit save ho gayi!');
+  ['vpatient','vcc','vbp','vpulse','vtemp','vbs','vdiag','vrx'].forEach(i => document.getElementById(i).value = '');
+}
+
+syncDB();
+</script>
+</body>
+</html>
