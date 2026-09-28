@@ -4,87 +4,193 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NBS Poly Clinic Management System</title>
-  
+
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
   <style>
     * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    body { background-color: #f4f7f6; margin: 0; padding: 15px; color: #333; }
+    body { background-color: #f1f5f9; margin: 0; padding: 15px; color: #1e293b; }
     .header { text-align: center; margin-bottom: 20px; }
-    .header h1 { color: #0284c7; margin: 5px 0; }
-    .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; }
-    .nav-tabs button { padding: 10px 20px; border: none; background: #cbd5e1; border-radius: 8px; cursor: pointer; font-weight: bold; }
-    .nav-tabs button.active { background: #0284c7; color: white; }
-    .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    .header h1 { color: #0284c7; margin: 0; font-size: 24px; }
+    .header p { color: #64748b; margin: 5px 0 0 0; font-size: 14px; }
+    
+    .nav-bar { display: flex; overflow-x: auto; gap: 8px; margin-bottom: 15px; padding-bottom: 5px; }
+    .nav-btn { flex: 1; min-width: 100px; padding: 10px 5px; border: none; background: #e2e8f0; color: #475569; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 13px; text-align: center; }
+    .nav-btn.active { background: #0284c7; color: white; }
+    
+    .user-banner { display: flex; justify-content: space-between; align-items: center; background: #e0f2fe; padding: 8px 12px; border-radius: 8px; margin-bottom: 15px; font-size: 13px; font-weight: 600; color: #0369a1; }
+    .btn-logout { background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+
+    .card { background: white; padding: 16px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 16px; }
+    .card h3 { margin-top: 0; font-size: 17px; color: #0f172a; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; }
+    
     .form-group { margin-bottom: 12px; }
-    label { display: block; font-weight: 600; margin-bottom: 5px; }
-    input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; }
-    .btn { background: #0284c7; color: white; padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; font-size: 15px; }
-    .btn:hover { background: #0369a1; }
-    .pending-item { border-left: 4px solid #f59e0b; padding: 12px; margin-bottom: 10px; background: #fffbeb; border-radius: 4px; }
-    .completed-item { border-left: 4px solid #10b981; padding: 12px; margin-bottom: 10px; background: #ecfdf5; border-radius: 4px; }
-    .badge { display: inline-block; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+    label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 4px; color: #334155; }
+    input, select, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; }
+    
+    .btn { background: #0284c7; color: white; padding: 10px 14px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; font-size: 14px; }
+    .btn-green { background: #10b981; }
+    .btn-purple { background: #8b5cf6; }
+    .btn-amber { background: #d97706; }
+    
+    .patient-card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 12px; background: #ffffff; }
+    .patient-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px; margin-bottom: 8px; }
+    .patient-name { font-weight: bold; font-size: 15px; color: #0284c7; }
+    .patient-meta { font-size: 12px; color: #64748b; }
+    
+    .readonly-box { background: #f8fafc; border: 1px dashed #cbd5e1; padding: 8px; border-radius: 6px; margin-bottom: 8px; font-size: 13px; }
+    .readonly-box p { margin: 4px 0; }
+    
+    .action-box { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 10px; border-radius: 6px; margin-top: 8px; }
+    .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; }
     .badge-pending { background: #fef3c7; color: #b45309; }
-    .badge-completed { background: #d1fae5; color: #065f46; }
+    .badge-done { background: #dcfce7; color: #15803d; }
   </style>
 </head>
 <body>
 
   <div class="header">
     <h1>NBS Poly Clinic</h1>
-    <p>Doctor & Pathology Real-Time Sync Portal</p>
+    <p>Department Login & Real-Time Sync Portal</p>
   </div>
 
-  <div class="nav-tabs">
-    <button id="tabDoctorBtn" class="active" onclick="switchTab('doctor')">Doctor Portal</button>
-    <button id="tabLabBtn" onclick="switchTab('lab')">Pathology Lab</button>
+  <!-- AUTH / LOGIN BOX -->
+  <div id="authSection" class="card" style="max-width: 400px; margin: 20px auto;">
+    <h3 style="text-align: center;">Department Login</h3>
+    <div class="form-group">
+      <label>Department Chunein:</label>
+      <select id="login_dept">
+        <option value="reg">1. Registration Reception</option>
+        <option value="doc">2. Doctor Consultation</option>
+        <option value="path">3. Pathology Lab</option>
+        <option value="rad">4. Radiology (X-Ray / USG)</option>
+        <option value="pharm">5. Pharmacy</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Password / PIN Dalein:</label>
+      <input type="password" id="login_password" placeholder="Enter password...">
+    </div>
+    <button class="btn" onclick="handleLogin()">Login Karein</button>
   </div>
 
-  <!-- DOCTOR SECTION -->
-  <div id="doctorSection">
-    <div class="card">
-      <h3>Add Patient & Prescribe Test</h3>
-      <div class="form-group">
-        <label>Patient ID / Mobile Number:</label>
-        <input type="text" id="patientId" placeholder="e.g. 9876543210">
-      </div>
-      <div class="form-group">
-        <label>Patient Name:</label>
-        <input type="text" id="patientName" placeholder="e.g. Rahul Sharma">
-      </div>
-      <div class="form-group">
-        <label>Advised Tests (Comma separated):</label>
-        <input type="text" id="testsAdvised" placeholder="e.g. CBC, Lipid Profile, Urine">
-      </div>
-      <div class="form-group">
-        <label>Clinical Notes / Symptoms:</label>
-        <textarea id="notes" rows="2" placeholder="Fever, weakness..."></textarea>
-      </div>
-      <button class="btn" onclick="submitClinicalVisit()">Send to Lab (Sync Live)</button>
+  <!-- MAIN APP CONTAINER (HIDDEN UNTIL LOGIN) -->
+  <div id="mainAppSection" style="display: none;">
+
+    <div class="user-banner">
+      <span>Logged In Department: <span id="currentDeptLabel" style="color:#0284c7;">-</span></span>
+      <button class="btn-logout" onclick="handleLogout()">Logout</button>
     </div>
 
-    <div class="card">
-      <h3>Completed Lab Reports (Live Auto-Update)</h3>
-      <div id="doctorReportsList">
-        <p style="color: #666;">No reports uploaded yet.</p>
-      </div>
+    <div class="nav-bar">
+      <button class="nav-btn" id="btn_reg" onclick="showSection('reg')">1. Reg</button>
+      <button class="nav-btn" id="btn_doc" onclick="showSection('doc')">2. Doctor</button>
+      <button class="nav-btn" id="btn_path" onclick="showSection('path')">3. Pathology</button>
+      <button class="nav-btn" id="btn_rad" onclick="showSection('rad')">4. Radiology</button>
+      <button class="nav-btn" id="btn_pharm" onclick="showSection('pharm')">5. Pharmacy</button>
     </div>
-  </div>
 
-  <!-- PATHOLOGY SECTION -->
-  <div id="labSection" style="display: none;">
-    <div class="card">
-      <h3>Pending Tests From Doctor (Live Sync)</h3>
-      <div id="labPendingList">
-        <p style="color: #666;">No pending tests from doctor.</p>
+    <!-- 1. REGISTRATION SECTION -->
+    <div id="section_reg" style="display: none;">
+      <div class="card">
+        <h3>New Patient Registration</h3>
+        <div class="form-group">
+          <label>Mobile Number (Patient ID):</label>
+          <input type="tel" id="reg_mobile" placeholder="Mobile number...">
+        </div>
+        <div class="form-group">
+          <label>Patient Full Name:</label>
+          <input type="text" id="reg_name" placeholder="Patient name...">
+        </div>
+        <div class="form-group">
+          <label>Age & Gender:</label>
+          <div style="display:flex; gap:10px;">
+            <input type="number" id="reg_age" placeholder="Age" style="width:50%;">
+            <select id="reg_gender" style="width:50%;">
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn" onclick="registerPatient()">Register Patient</button>
       </div>
     </div>
+
+    <!-- 2. DOCTOR SECTION -->
+    <div id="section_doc" style="display: none;">
+      <div class="card">
+        <h3>Doctor Consultation & Advice</h3>
+        <div class="form-group">
+          <label>Select Registered Patient:</label>
+          <select id="doc_patient_select" onchange="displaySelectedPatientDetails()">
+            <option value="">-- Select Patient --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Symptoms / Diagnosis:</label>
+          <textarea id="doc_diagnosis" rows="2" placeholder="Fever, cough, weakness..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Advise Pathology Tests (e.g. CBC, Lipid, Blood Sugar):</label>
+          <input type="text" id="doc_path_test" placeholder="None ya test name">
+        </div>
+        <div class="form-group">
+          <label>Advise Radiology / X-Ray (e.g. Chest X-Ray, USG):</label>
+          <input type="text" id="doc_rad_test" placeholder="None ya X-Ray details">
+        </div>
+        <div class="form-group">
+          <label>Prescribe Medicines (Pharmacy):</label>
+          <textarea id="doc_medicines" rows="2" placeholder="Paracetamol 650mg, Azithromycin..."></textarea>
+        </div>
+        <button class="btn" onclick="saveDoctorAdvice()">Save & Sync to All Departments</button>
+      </div>
+    </div>
+
+    <!-- 3. PATHOLOGY SECTION -->
+    <div id="section_path" style="display: none;">
+      <div class="card">
+        <h3>Pathology Department (Lab)</h3>
+        <p style="font-size:12px; color:#64748b;">Aap sabhi mareezon ka doctor advice dekh sakte hain aur test result submit kar sakte hain.</p>
+        <div id="pathology_records_list">Loading...</div>
+      </div>
+    </div>
+
+    <!-- 4. RADIOLOGY SECTION -->
+    <div id="section_rad" style="display: none;">
+      <div class="card">
+        <h3>Radiology & Imaging (X-Ray / USG)</h3>
+        <p style="font-size:12px; color:#64748b;">X-Ray/Scan recommendations dekh kar scan impression report submit karein.</p>
+        <div id="radiology_records_list">Loading...</div>
+      </div>
+    </div>
+
+    <!-- 5. PHARMACY SECTION -->
+    <div id="section_pharm" style="display: none;">
+      <div class="card">
+        <h3>Pharmacy Department</h3>
+        <p style="font-size:12px; color:#64748b;">Doctor ki prescription dekh kar medicines dispense karein.</p>
+        <div id="pharmacy_records_list">Loading...</div>
+      </div>
+    </div>
+
   </div>
 
   <script>
-    // 1. Firebase Configuration
+    // --- 1. PASSWORDS CONFIGURATION ---
+    const ROLE_PASSWORDS = {
+      reg: "1111",
+      doc: "2222",
+      path: "3333",
+      rad: "4444",
+      pharm: "5555"
+    };
+
+    let activeUserRole = null;
+
+    // --- 2. FIREBASE CONFIGURATION ---
     const firebaseConfig = {
       apiKey: "AIzaSyBeSB_UJsWo1hYav9VCk3Srk67p4",
       authDomain: "nbs-poly-clinic.firebaseapp.com",
@@ -98,141 +204,256 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // 2. Tab Navigation
-    function switchTab(tab) {
-      if (tab === 'doctor') {
-        document.getElementById('doctorSection').style.display = 'block';
-        document.getElementById('labSection').style.display = 'none';
-        document.getElementById('tabDoctorBtn').classList.add('active');
-        document.getElementById('tabLabBtn').classList.remove('active');
+    let allPatientsCache = [];
+
+    // --- 3. LOGIN & AUTH HANDLER ---
+    function handleLogin() {
+      const selectedDept = document.getElementById('login_dept').value;
+      const enteredPass = document.getElementById('login_password').value.trim();
+
+      if (ROLE_PASSWORDS[selectedDept] === enteredPass) {
+        activeUserRole = selectedDept;
+        document.getElementById('authSection').style.display = 'none';
+        document.getElementById('mainAppSection').style.display = 'block';
+
+        const deptNames = {
+          reg: "Registration Reception",
+          doc: "Doctor Consultation",
+          path: "Pathology Lab",
+          rad: "Radiology (X-Ray)",
+          pharm: "Pharmacy"
+        };
+
+        document.getElementById('currentDeptLabel').innerText = deptNames[selectedDept];
+        showSection(selectedDept);
       } else {
-        document.getElementById('doctorSection').style.display = 'none';
-        document.getElementById('labSection').style.display = 'block';
-        document.getElementById('tabDoctorBtn').classList.remove('active');
-        document.getElementById('tabLabBtn').classList.add('active');
+        alert("Galat password! Kripya sahi password enter karein.");
       }
     }
 
-    // 3. DOCTOR: Add Patient Visit and Send to Lab
-    async function submitClinicalVisit() {
-      const pId = document.getElementById('patientId').value.trim();
-      const pName = document.getElementById('patientName').value.trim();
-      const pTests = document.getElementById('testsAdvised').value.trim();
-      const pNotes = document.getElementById('notes').value.trim();
+    function handleLogout() {
+      activeUserRole = null;
+      document.getElementById('login_password').value = '';
+      document.getElementById('mainAppSection').style.display = 'none';
+      document.getElementById('authSection').style.display = 'block';
+    }
 
-      if (!pId || !pName || !pTests) {
-        alert("Kripya Patient ID, Name aur Tests bharein!");
+    function showSection(portal) {
+      // Permission check: Kisi aur department ke tab me jakar alter na karein
+      if (activeUserRole !== portal) {
+        const allowView = confirm("Aapka login '" + activeUserRole.toUpperCase() + "' ke liye hai. Kya aap sirf dusra section dekhna chahte hain?");
+        if (!allowView) return;
+      }
+
+      const sections = ['reg', 'doc', 'path', 'rad', 'pharm'];
+      sections.forEach(sec => {
+        document.getElementById('section_' + sec).style.display = (sec === portal) ? 'block' : 'none';
+        document.getElementById('btn_' + sec).classList.toggle('active', sec === portal);
+      });
+    }
+
+    // --- 4. REGISTRATION FUNCTION ---
+    async function registerPatient() {
+      if (activeUserRole !== 'reg' && activeUserRole !== 'doc') {
+        alert("Sirf Registration ya Doctor portal se patient add kiya ja sakta hai!");
+        return;
+      }
+
+      const mobile = document.getElementById('reg_mobile').value.trim();
+      const name = document.getElementById('reg_name').value.trim();
+      const age = document.getElementById('reg_age').value.trim();
+      const gender = document.getElementById('reg_gender').value;
+
+      if (!mobile || !name || !age) {
+        alert("Saari jankari bharein!");
         return;
       }
 
       try {
-        await db.collection("visits").add({
-          patientId: pId,
-          patientName: pName,
-          tests: pTests,
-          notes: pNotes,
-          status: "pending_lab",
-          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        await db.collection("patients").doc(mobile).set({
+          mobile: mobile,
+          name: name,
+          age: age,
+          gender: gender,
+          registeredAt: firebase.firestore.FieldValue.serverTimestamp(),
+          diagnosis: "Pending Doctor Consultation",
+          pathologyTests: "",
+          pathologyReport: "",
+          pathologyStatus: "None",
+          radiologyTests: "",
+          radiologyReport: "",
+          radiologyStatus: "None",
+          medicines: "",
+          pharmacyStatus: "Pending"
         });
 
-        alert("Patient record lab ko live bhej diya gaya!");
-        document.getElementById('patientId').value = '';
-        document.getElementById('patientName').value = '';
-        document.getElementById('testsAdvised').value = '';
-        document.getElementById('notes').value = '';
+        alert("Patient Register ho gaya!");
+        document.getElementById('reg_mobile').value = '';
+        document.getElementById('reg_name').value = '';
+        document.getElementById('reg_age').value = '';
+      } catch (err) {
+        alert("Registration Error: " + err.message);
+      }
+    }
+
+    // --- 5. REALTIME SYNC LISTENER ---
+    db.collection("patients").onSnapshot((snapshot) => {
+      allPatientsCache = [];
+      const docSelect = document.getElementById('doc_patient_select');
+      docSelect.innerHTML = '<option value="">-- Select Patient --</option>';
+
+      let pathHtml = '';
+      let radHtml = '';
+      let pharmHtml = '';
+
+      snapshot.forEach((doc) => {
+        const p = doc.data();
+        allPatientsCache.push(p);
+
+        docSelect.innerHTML += `<option value="${p.mobile}">${p.name} (${p.mobile})</option>`;
+
+        // Pathology Card
+        if (p.pathologyTests && p.pathologyTests !== "None") {
+          pathHtml += `
+            <div class="patient-card">
+              <div class="patient-header">
+                <div>
+                  <span class="patient-name">${p.name}</span> (${p.gender}, ${p.age} yrs)
+                  <div class="patient-meta">Mobile: ${p.mobile}</div>
+                </div>
+                <span class="badge ${p.pathologyStatus === 'Completed' ? 'badge-done' : 'badge-pending'}">${p.pathologyStatus}</span>
+              </div>
+              <div class="readonly-box">
+                <p><strong>Doctor Diagnosis:</strong> ${p.diagnosis || 'N/A'}</p>
+                <p><strong>Prescribed Lab Tests:</strong> <span style="color:#d97706; font-weight:bold;">${p.pathologyTests}</span></p>
+                ${p.pathologyReport ? `<p><strong>Uploaded Report:</strong> ${p.pathologyReport}</p>` : ''}
+              </div>
+              <div class="action-box">
+                <label>Enter Test Results / Findings:</label>
+                <input type="text" id="path_in_${p.mobile}" placeholder="Values, Report findings..." style="margin-bottom:8px;">
+                <button class="btn btn-amber" onclick="updatePathologyReport('${p.mobile}')">Upload Lab Report</button>
+              </div>
+            </div>`;
+        }
+
+        // Radiology Card
+        if (p.radiologyTests && p.radiologyTests !== "None") {
+          radHtml += `
+            <div class="patient-card">
+              <div class="patient-header">
+                <div>
+                  <span class="patient-name">${p.name}</span> (${p.gender}, ${p.age} yrs)
+                  <div class="patient-meta">Mobile: ${p.mobile}</div>
+                </div>
+                <span class="badge ${p.radiologyStatus === 'Completed' ? 'badge-done' : 'badge-pending'}">${p.radiologyStatus}</span>
+              </div>
+              <div class="readonly-box">
+                <p><strong>Doctor Advice:</strong> ${p.diagnosis || 'N/A'}</p>
+                <p><strong>Advised X-Ray / Scan:</strong> <span style="color:#8b5cf6; font-weight:bold;">${p.radiologyTests}</span></p>
+                ${p.radiologyReport ? `<p><strong>Radiology Report:</strong> ${p.radiologyReport}</p>` : ''}
+              </div>
+              <div class="action-box">
+                <label>Enter X-Ray / Scan Impression:</label>
+                <input type="text" id="rad_in_${p.mobile}" placeholder="e.g. Normal chest, no fracture..." style="margin-bottom:8px;">
+                <button class="btn btn-purple" onclick="updateRadiologyReport('${p.mobile}')">Submit Scan Report</button>
+              </div>
+            </div>`;
+        }
+
+        // Pharmacy Card
+        if (p.medicines && p.medicines !== "None") {
+          pharmHtml += `
+            <div class="patient-card">
+              <div class="patient-header">
+                <div>
+                  <span class="patient-name">${p.name}</span> (${p.gender}, ${p.age} yrs)
+                  <div class="patient-meta">Mobile: ${p.mobile}</div>
+                </div>
+                <span class="badge ${p.pharmacyStatus === 'Dispensed' ? 'badge-done' : 'badge-pending'}">${p.pharmacyStatus}</span>
+              </div>
+              <div class="readonly-box">
+                <p><strong>Doctor Diagnosis:</strong> ${p.diagnosis || 'N/A'}</p>
+                <p><strong>Prescription:</strong> <span style="color:#0284c7; font-weight:bold;">${p.medicines}</span></p>
+              </div>
+              <div class="action-box">
+                <button class="btn btn-green" onclick="dispenseMedicines('${p.mobile}')">Mark Medicines as Dispensed</button>
+              </div>
+            </div>`;
+        }
+      });
+
+      document.getElementById('pathology_records_list').innerHTML = pathHtml || '<p style="color:#64748b;">No active pathology requests.</p>';
+      document.getElementById('radiology_records_list').innerHTML = radHtml || '<p style="color:#64748b;">No active radiology requests.</p>';
+      document.getElementById('pharmacy_records_list').innerHTML = pharmHtml || '<p style="color:#64748b;">No active medicine prescriptions.</p>';
+    });
+
+    // --- 6. DOCTOR ACTIONS ---
+    function displaySelectedPatientDetails() {
+      const mobile = document.getElementById('doc_patient_select').value;
+      const patient = allPatientsCache.find(p => p.mobile === mobile);
+      if (patient) {
+        document.getElementById('doc_diagnosis').value = patient.diagnosis === "Pending Doctor Consultation" ? "" : (patient.diagnosis || "");
+        document.getElementById('doc_path_test').value = patient.pathologyTests || "";
+        document.getElementById('doc_rad_test').value = patient.radiologyTests || "";
+        document.getElementById('doc_medicines').value = patient.medicines || "";
+      }
+    }
+
+    async function saveDoctorAdvice() {
+      if (activeUserRole !== 'doc') {
+        alert("Sirf Doctor hi prescription aur advice badal sakte hain!");
+        return;
+      }
+
+      const mobile = document.getElementById('doc_patient_select').value;
+      if (!mobile) {
+        alert("Pehle patient select karein!");
+        return;
+      }
+
+      const diagnosis = document.getElementById('doc_diagnosis').value.trim();
+      const pathTest = document.getElementById('doc_path_test').value.trim();
+      const radTest = document.getElementById('doc_rad_test').value.trim();
+      const meds = document.getElementById('doc_medicines').value.trim();
+
+      try {
+        await db.collection("patients").doc(mobile).update({
+          diagnosis: diagnosis,
+          pathologyTests: pathTest,
+          pathologyStatus: pathTest ? "Pending" : "None",
+          radiologyTests: radTest,
+          radiologyStatus: radTest ? "Pending" : "None",
+          medicines: meds,
+          pharmacyStatus: meds ? "Pending" : "None"
+        });
+
+        alert("Doctor Advice successfully save ho gayi aur sabhi department ko live send ho gayi!");
       } catch (err) {
         alert("Error: " + err.message);
       }
     }
 
-    // 4. PATHOLOGY: Listen for Realtime Pending Tests
-    function startLabRealtimeSync() {
-      db.collection("visits")
-        .where("status", "==", "pending_lab")
-        .onSnapshot((snapshot) => {
-          const container = document.getElementById('labPendingList');
-          if (snapshot.empty) {
-            container.innerHTML = "<p style='color:#666;'>Koi pending lab test nahi hai.</p>";
-            return;
-          }
-
-          let html = "";
-          snapshot.forEach((doc) => {
-            const data = doc.data();
-            html += `
-              <div class="pending-item">
-                <p><strong>Patient ID:</strong> ${data.patientId} | <strong>Name:</strong> ${data.patientName}</p>
-                <p><strong>Tests Advised:</strong> <span style="color:#d97706; font-weight:bold;">${data.tests}</span></p>
-                <p><strong>Doctor Notes:</strong> ${data.notes || 'None'}</p>
-                
-                <div style="margin-top: 10px;">
-                  <input type="text" id="reportResult_${doc.id}" placeholder="Enter lab findings / report values" style="margin-bottom:8px;">
-                  <button class="btn" style="background:#10b981;" onclick="submitReport('${doc.id}', '${data.patientId}', '${data.patientName}', '${data.tests}')">Submit Report</button>
-                </div>
-              </div>
-            `;
-          });
-          container.innerHTML = html;
-        });
-    }
-
-    // 5. PATHOLOGY: Submit Completed Report
-    async function submitReport(visitId, pId, pName, testName) {
-      const resultVal = document.getElementById('reportResult_' + visitId).value.trim();
-      if (!resultVal) {
-        alert("Report details likhiye!");
+    // --- 7. PATHOLOGY ACTIONS ---
+    async function updatePathologyReport(mobile) {
+      if (activeUserRole !== 'path') {
+        alert("Sirf Pathology login se hi report submit ki ja sakti hai!");
         return;
       }
 
+      const reportVal = document.getElementById('path_in_' + mobile).value.trim();
+      if (!reportVal) {
+        alert("Report details enter karein!");
+        return;
+      }
       try {
-        await db.collection("reports").add({
-          visitId: visitId,
-          patientId: pId,
-          patientName: pName,
-          testName: testName,
-          result: resultVal,
-          completedAt: firebase.firestore.FieldValue.serverTimestamp()
+        await db.collection("patients").doc(mobile).update({
+          pathologyReport: reportVal,
+          pathologyStatus: "Completed"
         });
-
-        await db.collection("visits").doc(visitId).update({
-          status: "completed"
-        });
-
-        alert("Report complete ho kar doctor ke dashboard par update ho gayi!");
+        alert("Lab Report live update ho gayi!");
       } catch (err) {
-        alert("Error submitting report: " + err.message);
+        alert("Error: " + err.message);
       }
     }
 
-    // 6. DOCTOR: Listen for Realtime Completed Reports
-    function startDoctorReportsSync() {
-      db.collection("reports")
-        .orderBy("completedAt", "desc")
-        .onSnapshot((snapshot) => {
-          const container = document.getElementById('doctorReportsList');
-          if (snapshot.empty) {
-            container.innerHTML = "<p style='color:#666;'>No reports completed yet.</p>";
-            return;
-          }
-
-          let html = "";
-          snapshot.forEach((doc) => {
-            const data = doc.data();
-            html += `
-              <div class="completed-item">
-                <p><strong>Patient ID:</strong> ${data.patientId} | <strong>Name:</strong> ${data.patientName} <span class="badge badge-completed">Report Ready</span></p>
-                <p><strong>Test:</strong> ${data.testName}</p>
-                <p><strong>Lab Findings / Result:</strong> ${data.result}</p>
-              </div>
-            `;
-          });
-          container.innerHTML = html;
-        });
-    }
-
-    // Initialize listeners
-    startLabRealtimeSync();
-    startDoctorReportsSync();
-  </script>
-</body>
-</html>
+    // --- 8. RA
