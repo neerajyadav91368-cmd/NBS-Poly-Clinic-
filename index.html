@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NBS Poly Clinic Management System</title>
 
-  <!-- Firebase Scripts -->
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
@@ -51,8 +51,6 @@
     .badge-pending { background: #fef3c7; color: #b45309; }
     .badge-done { background: #dcfce7; color: #15803d; }
 
-    #dbNotice { background: #fef08a; color: #854d0e; padding: 8px; border-radius: 6px; font-size: 12px; text-align: center; margin-bottom: 12px; display: none; }
-
     /* PRINT RECEIPT STYLING */
     #printableParcha { display: none; background: white; padding: 25px; border: 1px solid #000; color: #000; font-family: Arial, sans-serif; }
     .print-clinic-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px; }
@@ -78,8 +76,6 @@
     <p>Department Portal & Prescription Management</p>
   </div>
 
-  <div id="dbNotice"></div>
-
   <!-- AUTH SECTION -->
   <div id="authSection" class="card" style="max-width: 400px; margin: 20px auto;">
     <h3 style="text-align: center;">Department Login</h3>
@@ -97,26 +93,26 @@
 
     <div class="form-group">
       <label>Password / PIN Dalein:</label>
-      <input type="password" id="login_password" placeholder="Enter PIN" onkeydown="if(event.key==='Enter') doLogin()">
+      <input type="password" id="login_password" placeholder="Enter PIN" onkeydown="if(event.key==='Enter') executeLogin()">
     </div>
 
-    <button type="button" class="btn" onclick="doLogin()">Login Karein</button>
+    <button type="button" class="btn" onclick="executeLogin()">Login Karein</button>
   </div>
 
-  <!-- MAIN APP -->
+  <!-- MAIN APP CONTAINER -->
   <div id="mainAppSection" style="display: none;">
 
     <div class="user-banner">
       <span>Logged In: <strong id="currentDeptLabel" style="color:#0284c7;">-</strong></span>
-      <button class="btn-logout" type="button" onclick="doLogout()">Logout</button>
+      <button class="btn-logout" type="button" onclick="executeLogout()">Logout</button>
     </div>
 
     <div class="nav-bar">
-      <button class="nav-btn" id="btn_reg" onclick="switchTab('reg')">1. Reg</button>
-      <button class="nav-btn" id="btn_doc" onclick="switchTab('doc')">2. Doctor</button>
-      <button class="nav-btn" id="btn_path" onclick="switchTab('path')">3. Pathology</button>
-      <button class="nav-btn" id="btn_rad" onclick="switchTab('rad')">4. Radiology</button>
-      <button class="nav-btn" id="btn_pharm" onclick="switchTab('pharm')">5. Pharmacy</button>
+      <button class="nav-btn" id="btn_reg" onclick="showPortalTab('reg')">1. Reg</button>
+      <button class="nav-btn" id="btn_doc" onclick="showPortalTab('doc')">2. Doctor</button>
+      <button class="nav-btn" id="btn_path" onclick="showPortalTab('path')">3. Pathology</button>
+      <button class="nav-btn" id="btn_rad" onclick="showPortalTab('rad')">4. Radiology</button>
+      <button class="nav-btn" id="btn_pharm" onclick="showPortalTab('pharm')">5. Pharmacy</button>
     </div>
 
     <!-- 1. REGISTRATION -->
@@ -152,7 +148,7 @@
           <div><label>Weight (kg):</label><input type="text" id="reg_weight" placeholder="65"></div>
         </div>
 
-        <button class="btn" type="button" id="regBtn" onclick="registerPatient()">Register Patient</button>
+        <button class="btn" type="button" id="regBtn" onclick="saveNewPatient()">Register Patient</button>
       </div>
     </div>
 
@@ -162,7 +158,7 @@
         <h3>Doctor Consultation & Rx</h3>
         <div class="form-group">
           <label>Select Registered Patient:</label>
-          <select id="doc_patient_select" onchange="displaySelectedPatientDetails()">
+          <select id="doc_patient_select" onchange="loadDoctorPatientDetails()">
             <option value="">-- Select Patient --</option>
           </select>
         </div>
@@ -291,12 +287,47 @@
   </div>
 
   <script>
-    const PASSWORDS = { reg: "1111", doc: "2222", path: "3333", rad: "4444", pharm: "5555" };
-    let currentRole = null;
+    // 1. CONFIGURATION & APP STATE
+    const PASSWORDS = {
+      reg: "1111",
+      doc: "2222",
+      path: "3333",
+      rad: "4444",
+      pharm: "5555"
+    };
 
-    function doLogin() {
-      const dept = document.getElementById('login_dept').value;
-      const pass = document.getElementById('login_password').value.trim();
+    let currentRole = null;
+    let db = null;
+    let cachedPatients = [];
+
+    // FIREBASE INITIALIZATION
+    try {
+      const firebaseConfig = {
+        apiKey: "AIzaSyBeSB_UJsWo1hYav9VCk3Srk67p4",
+        authDomain: "nbs-poly-clinic.firebaseapp.com",
+        projectId: "nbs-poly-clinic",
+        storageBucket: "nbs-poly-clinic.appspot.com",
+        messagingSenderId: "836155988202",
+        appId: "1:836155988202:web:0419cb6ee23fb1",
+        measurementId: "G-6FKEMC96WB"
+      };
+
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+      initRealtimeListener();
+    } catch (e) {
+      console.error("Firebase init failed: ", e);
+    }
+
+    // 2. AUTHENTICATION HANDLERS
+    function executeLogin() {
+      const deptEl = document.getElementById('login_dept');
+      const passEl = document.getElementById('login_password');
+
+      if (!deptEl || !passEl) return;
+
+      const dept = deptEl.value;
+      const pass = passEl.value.trim();
 
       if (PASSWORDS[dept] === pass) {
         currentRole = dept;
@@ -312,20 +343,20 @@
         };
 
         document.getElementById('currentDeptLabel').innerText = labels[dept];
-        switchTab(dept);
+        showPortalTab(dept);
       } else {
-        alert("Galat Password! Sahi PIN dalein (Registration: 1111)");
+        alert("Galat Password! Kripya sahi PIN dalein:\nRegistration: 1111\nDoctor: 2222\nPathology: 3333\nRadiology: 4444\nPharmacy: 5555");
       }
     }
 
-    function doLogout() {
+    function executeLogout() {
       currentRole = null;
       document.getElementById('login_password').value = "";
       document.getElementById('mainAppSection').style.display = 'none';
       document.getElementById('authSection').style.display = 'block';
     }
 
-    function switchTab(tabId) {
+    function showPortalTab(tabId) {
       const tabs = ['reg', 'doc', 'path', 'rad', 'pharm'];
       tabs.forEach(t => {
         const sec = document.getElementById('section_' + t);
@@ -335,25 +366,10 @@
       });
     }
 
-    // FIREBASE SETUP
-    let db = null;
-    let cachedPatients = [];
-
-    try {
-      const firebaseConfig = {
-        apiKey: "AIzaSyBeSB_UJsWo1hYav9VCk3Srk67p4",
-        authDomain: "nbs-poly-clinic.firebaseapp.com",
-        projectId: "nbs-poly-clinic",
-        storageBucket: "nbs-poly-clinic.appspot.com",
-        messagingSenderId: "836155988202",
-        appId: "1:836155988202:web:0419cb6ee23fb1",
-        measurementId: "G-6FKEMC96WB"
-      };
-
-      firebase.initializeApp(firebaseConfig);
-      db = firebase.firestore();
-
-      // REALTIME LISTENER
+    // 3. REALTIME FIRESTORE LISTENER
+    function initRealtimeListener() {
+      if (!db) return;
+      
       db.collection("patients").onSnapshot((snapshot) => {
         cachedPatients = [];
         const docSelect = document.getElementById('doc_patient_select');
@@ -420,12 +436,4 @@
             </div>`;
 
           // Pharmacy Card
-          const medsText = p.medicines ? p.medicines : '<span style="color:#94a3b8; font-style:italic;">No Medicines Prescribed</span>';
-          pharmHtml += `
-            <div class="patient-card">
-              <div class="patient-header">
-                <div>
-                  <span class="patient-name">${p.name}</span> (${p.gender}, ${p.age} yrs)
-                  <div class="patient-meta">Mob: ${p.mobile}</div>
-                </div>
-            
+          const medsText = p.medicines ? p.medicines : '<span style="color:#94a3b8; font-style:italic;">No Medicines Prescribed</sp
