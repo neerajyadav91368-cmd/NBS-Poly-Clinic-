@@ -11,53 +11,73 @@
 
   <style>
     * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    body { background-color: #f1f5f9; margin: 0; padding: 15px; color: #1e293b; }
-    .header { text-align: center; margin-bottom: 20px; }
-    .header h1 { color: #0284c7; margin: 0; font-size: 24px; }
-    .header p { color: #64748b; margin: 5px 0 0 0; font-size: 14px; }
+    body { background-color: #f1f5f9; margin: 0; padding: 12px; color: #1e293b; }
+    .header { text-align: center; margin-bottom: 15px; }
+    .header h1 { color: #0284c7; margin: 0; font-size: 22px; }
+    .header p { color: #64748b; margin: 4px 0 0 0; font-size: 13px; }
     
-    .nav-bar { display: flex; overflow-x: auto; gap: 8px; margin-bottom: 15px; padding-bottom: 5px; }
-    .nav-btn { flex: 1; min-width: 100px; padding: 10px 5px; border: none; background: #e2e8f0; color: #475569; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 13px; text-align: center; }
+    .nav-bar { display: flex; overflow-x: auto; gap: 6px; margin-bottom: 15px; padding-bottom: 4px; }
+    .nav-btn { flex: 1; min-width: 90px; padding: 8px 4px; border: none; background: #e2e8f0; color: #475569; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; text-align: center; }
     .nav-btn.active { background: #0284c7; color: white; }
     
-    .user-banner { display: flex; justify-content: space-between; align-items: center; background: #e0f2fe; padding: 8px 12px; border-radius: 8px; margin-bottom: 15px; font-size: 13px; font-weight: 600; color: #0369a1; }
-    .btn-logout { background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+    .user-banner { display: flex; justify-content: space-between; align-items: center; background: #e0f2fe; padding: 8px 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; font-weight: 600; color: #0369a1; }
+    .btn-logout { background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 11px; }
 
-    .card { background: white; padding: 16px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 16px; }
-    .card h3 { margin-top: 0; font-size: 17px; color: #0f172a; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; }
+    .card { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 14px; }
+    .card h3 { margin-top: 0; font-size: 16px; color: #0f172a; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; }
     
-    .form-group { margin-bottom: 12px; }
-    label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 4px; color: #334155; }
-    input, select, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; }
+    .form-group { margin-bottom: 10px; }
+    label { display: block; font-weight: 600; font-size: 12px; margin-bottom: 4px; color: #334155; }
+    input, select, textarea { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; }
     
-    .btn { background: #0284c7; color: white; padding: 12px 14px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; font-size: 15px; }
+    .grid-vitals { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; margin-bottom: 10px; }
+
+    .btn { background: #0284c7; color: white; padding: 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; font-size: 14px; margin-top: 4px; }
+    .btn-print { background: #475569; }
     .btn-green { background: #10b981; }
     .btn-purple { background: #8b5cf6; }
     .btn-amber { background: #d97706; }
     
-    .patient-card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 12px; background: #ffffff; }
-    .patient-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px; margin-bottom: 8px; }
-    .patient-name { font-weight: bold; font-size: 15px; color: #0284c7; }
-    .patient-meta { font-size: 12px; color: #64748b; }
+    .patient-card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 10px; background: #ffffff; }
+    .patient-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px; margin-bottom: 8px; }
+    .patient-name { font-weight: bold; font-size: 14px; color: #0284c7; }
+    .patient-meta { font-size: 11px; color: #64748b; margin-top: 2px; }
     
-    .readonly-box { background: #f8fafc; border: 1px dashed #cbd5e1; padding: 8px; border-radius: 6px; margin-bottom: 8px; font-size: 13px; }
-    .readonly-box p { margin: 4px 0; }
+    .readonly-box { background: #f8fafc; border: 1px dashed #cbd5e1; padding: 8px; border-radius: 6px; margin-bottom: 8px; font-size: 12px; }
+    .readonly-box p { margin: 3px 0; }
     
-    .action-box { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 10px; border-radius: 6px; margin-top: 8px; }
-    .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+    .action-box { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 8px; border-radius: 6px; margin-top: 6px; }
+    .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
     .badge-pending { background: #fef3c7; color: #b45309; }
     .badge-done { background: #dcfce7; color: #15803d; }
     #loginError { color: #dc2626; font-size: 13px; font-weight: bold; margin-top: 8px; text-align: center; }
+
+    /* PRINT RECEIPT STYLING */
+    #printableParcha { display: none; background: white; padding: 25px; border: 1px solid #000; color: #000; font-family: Arial, sans-serif; }
+    .print-clinic-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px; }
+    .print-clinic-header h2 { margin: 0; font-size: 24px; text-transform: uppercase; }
+    .print-patient-info { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 14px; border-bottom: 1px dashed #666; padding-bottom: 8px; }
+    .vitals-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 13px; }
+    .vitals-table th, .vitals-table td { border: 1px solid #000; padding: 6px; text-align: center; }
+    .print-section { margin-bottom: 15px; font-size: 14px; }
+    .print-section h4 { margin: 0 0 5px 0; border-bottom: 1px solid #ccc; padding-bottom: 3px; }
+    .print-footer { margin-top: 40px; display: flex; justify-content: space-between; font-size: 13px; }
+
+    @media print {
+      body * { visibility: hidden; }
+      #printableParcha, #printableParcha * { visibility: visible; }
+      #printableParcha { display: block !important; position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 20px; }
+    }
   </style>
 </head>
 <body>
 
   <div class="header">
     <h1>NBS Poly Clinic</h1>
-    <p>Department Login & Real-Time Sync Portal</p>
+    <p>Department Portal & Prescription Management</p>
   </div>
 
-  <!-- AUTH / LOGIN BOX -->
+  <!-- AUTH SECTION -->
   <div id="authSection" class="card" style="max-width: 400px; margin: 20px auto;">
     <h3 style="text-align: center;">Department Login</h3>
     
@@ -74,14 +94,14 @@
 
     <div class="form-group">
       <label>Password / PIN Dalein:</label>
-      <input type="password" id="login_password" placeholder="Enter PIN (e.g. 1111)">
+      <input type="password" id="login_password" placeholder="Enter PIN">
     </div>
 
     <button type="button" class="btn" id="loginSubmitBtn">Login Karein</button>
     <div id="loginError"></div>
   </div>
 
-  <!-- MAIN APP CONTAINER -->
+  <!-- MAIN APP -->
   <div id="mainAppSection" style="display: none;">
 
     <div class="user-banner">
@@ -100,7 +120,7 @@
     <!-- 1. REGISTRATION -->
     <div id="section_reg" style="display: none;">
       <div class="card">
-        <h3>New Patient Registration</h3>
+        <h3>New Patient Registration & Primary Vitals</h3>
         <div class="form-group">
           <label>Mobile Number (Patient ID):</label>
           <input type="tel" id="reg_mobile" placeholder="Mobile number...">
@@ -120,6 +140,16 @@
             </select>
           </div>
         </div>
+
+        <label style="margin-top:10px;">Patient Vitals (Optional / At Entry):</label>
+        <div class="grid-vitals">
+          <div><label>BP (mmHg):</label><input type="text" id="reg_bp" placeholder="120/80"></div>
+          <div><label>Sugar (mg/dL):</label><input type="text" id="reg_sugar" placeholder="110"></div>
+          <div><label>SpO2 (%):</label><input type="text" id="reg_spo2" placeholder="98"></div>
+          <div><label>Pulse (PR):</label><input type="text" id="reg_pulse" placeholder="72"></div>
+          <div><label>Weight (kg):</label><input type="text" id="reg_weight" placeholder="65"></div>
+        </div>
+
         <button class="btn" type="button" onclick="registerPatient()">Register Patient</button>
       </div>
     </div>
@@ -127,37 +157,49 @@
     <!-- 2. DOCTOR -->
     <div id="section_doc" style="display: none;">
       <div class="card">
-        <h3>Doctor Consultation & Advice</h3>
+        <h3>Doctor Consultation & Rx</h3>
         <div class="form-group">
           <label>Select Registered Patient:</label>
           <select id="doc_patient_select" onchange="displaySelectedPatientDetails()">
             <option value="">-- Select Patient --</option>
           </select>
         </div>
+
+        <label>Patient Vitals (Check / Update):</label>
+        <div class="grid-vitals">
+          <div><label>BP:</label><input type="text" id="doc_bp" placeholder="120/80"></div>
+          <div><label>Sugar:</label><input type="text" id="doc_sugar" placeholder="mg/dL"></div>
+          <div><label>SpO2:</label><input type="text" id="doc_spo2" placeholder="%"></div>
+          <div><label>Pulse (PR):</label><input type="text" id="doc_pulse" placeholder="bpm"></div>
+          <div><label>Weight:</label><input type="text" id="doc_weight" placeholder="kg"></div>
+        </div>
+
         <div class="form-group">
-          <label>Symptoms / Diagnosis:</label>
-          <textarea id="doc_diagnosis" rows="2" placeholder="Fever, cough, weakness..."></textarea>
+          <label>Symptoms / Clinical Diagnosis:</label>
+          <textarea id="doc_diagnosis" rows="2" placeholder="Fever, cough..."></textarea>
         </div>
         <div class="form-group">
           <label>Advise Pathology Tests (e.g. CBC, Sugar):</label>
-          <input type="text" id="doc_path_test" placeholder="Test name...">
+          <input type="text" id="doc_path_test" placeholder="Tests recommend karein...">
         </div>
         <div class="form-group">
           <label>Advise Radiology / X-Ray (e.g. Chest X-Ray):</label>
           <input type="text" id="doc_rad_test" placeholder="X-Ray details...">
         </div>
         <div class="form-group">
-          <label>Prescribe Medicines (Pharmacy):</label>
-          <textarea id="doc_medicines" rows="2" placeholder="Medicines..."></textarea>
+          <label>Prescribe Medicines (Rx):</label>
+          <textarea id="doc_medicines" rows="3" placeholder="Medicine Name - Dosage - Duration..."></textarea>
         </div>
-        <button class="btn" type="button" onclick="saveDoctorAdvice()">Save & Sync to All</button>
+
+        <button class="btn" type="button" onclick="saveDoctorAdvice()">Save & Sync to All Departments</button>
+        <button class="btn btn-print" type="button" onclick="printPrescription()">🖨️ Print Prescription / Parcha</button>
       </div>
     </div>
 
     <!-- 3. PATHOLOGY -->
     <div id="section_path" style="display: none;">
       <div class="card">
-        <h3>Pathology Department (Lab)</h3>
+        <h3>Pathology Lab (All Patients & Recommended Tests)</h3>
         <div id="pathology_records_list">Loading patients...</div>
       </div>
     </div>
@@ -173,26 +215,83 @@
     <!-- 5. PHARMACY -->
     <div id="section_pharm" style="display: none;">
       <div class="card">
-        <h3>Pharmacy Department</h3>
+        <h3>Pharmacy (Prescriptions & Dispense)</h3>
         <div id="pharmacy_records_list">Loading patients...</div>
       </div>
     </div>
 
   </div>
 
-  <script>
-    // PASSWORDS
-    const PASSWORDS = {
-      reg: "1111",
-      doc: "2222",
-      path: "3333",
-      rad: "4444",
-      pharm: "5555"
-    };
+  <!-- PRINTABLE RECEIPT / PARCHA TEMPLATE -->
+  <div id="printableParcha">
+    <div class="print-clinic-header">
+      <h2>NBS Poly Clinic</h2>
+      <p style="margin: 2px 0;">Sadhanganj Sewaith Road, Soraon, Prayagraj</p>
+      <p style="margin: 2px 0; font-size: 12px;">Mobile: +91-XXXXXXXXXX | Consultation & Diagnostic Center</p>
+    </div>
 
+    <div class="print-patient-info">
+      <div>
+        <strong>Patient Name:</strong> <span id="pr_name">-</span><br>
+        <strong>Age / Gender:</strong> <span id="pr_age_gender">-</span>
+      </div>
+      <div style="text-align: right;">
+        <strong>Patient ID / Mob:</strong> <span id="pr_mob">-</span><br>
+        <strong>Date:</strong> <span id="pr_date">-</span>
+      </div>
+    </div>
+
+    <table class="vitals-table">
+      <thead>
+        <tr style="background: #f1f5f9;">
+          <th>BP</th>
+          <th>Sugar</th>
+          <th>SpO2</th>
+          <th>Pulse (PR)</th>
+          <th>Weight</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td id="pr_bp">-</td>
+          <td id="pr_sugar">-</td>
+          <td id="pr_spo2">-</td>
+          <td id="pr_pulse">-</td>
+          <td id="pr_weight">-</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="print-section">
+      <h4>Clinical Diagnosis / Symptoms:</h4>
+      <p id="pr_diagnosis" style="margin: 4px 0; white-space: pre-wrap;">None</p>
+    </div>
+
+    <div class="print-section">
+      <h4>Advised Investigations (Pathology / Radiology):</h4>
+      <p><strong>Pathology:</strong> <span id="pr_path">None</span></p>
+      <p><strong>Radiology / Scan:</strong> <span id="pr_rad">None</span></p>
+    </div>
+
+    <div class="print-section">
+      <h4>Rx (Prescribed Medicines):</h4>
+      <p id="pr_rx" style="font-weight: bold; margin: 4px 0; white-space: pre-wrap; min-height: 80px;">None</p>
+    </div>
+
+    <div class="print-footer">
+      <div>
+        <em>*Kripya dawa samay par lein. Dobara dikhane aate waqt ye parcha sath layein.</em>
+      </div>
+      <div style="text-align: center; border-top: 1px solid #000; width: 160px; padding-top: 5px;">
+        Doctor Signature
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const PASSWORDS = { reg: "1111", doc: "2222", path: "3333", rad: "4444", pharm: "5555" };
     let currentRole = null;
 
-    // LOGIN ACTION
     document.getElementById('loginSubmitBtn').onclick = function() {
       const dept = document.getElementById('login_dept').value;
       const pass = document.getElementById('login_password').value.trim();
@@ -206,7 +305,7 @@
 
         const labels = {
           reg: "Registration Reception",
-          doc: "Doctor Portal",
+          doc: "Doctor Consultation",
           path: "Pathology Lab",
           rad: "Radiology Portal",
           pharm: "Pharmacy Portal"
@@ -219,7 +318,6 @@
       }
     };
 
-    // LOGOUT ACTION
     document.getElementById('logoutBtn').onclick = function() {
       currentRole = null;
       document.getElementById('login_password').value = "";
@@ -228,7 +326,6 @@
       document.getElementById('authSection').style.display = 'block';
     };
 
-    // TAB SWITCH
     function switchTab(tabId) {
       const tabs = ['reg', 'doc', 'path', 'rad', 'pharm'];
       tabs.forEach(t => {
@@ -256,11 +353,19 @@
     db.collection("patients").onSnapshot((snapshot) => {
       cachedPatients = [];
       const docSelect = document.getElementById('doc_patient_select');
+      const selectedVal = docSelect.value;
       docSelect.innerHTML = '<option value="">-- Select Patient --</option>';
 
       let pathHtml = '';
       let radHtml = '';
       let pharmHtml = '';
+
+      if (snapshot.empty) {
+        document.getElementById('pathology_records_list').innerHTML = '<p style="color:#64748b;">Abhi tak koi patient register nahi hua hai.</p>';
+        document.getElementById('radiology_records_list').innerHTML = '<p style="color:#64748b;">Abhi tak koi patient register nahi hua hai.</p>';
+        document.getElementById('pharmacy_records_list').innerHTML = '<p style="color:#64748b;">Abhi tak koi patient register nahi hua hai.</p>';
+        return;
+      }
 
       snapshot.forEach((doc) => {
         const p = doc.data();
@@ -268,189 +373,57 @@
 
         docSelect.innerHTML += `<option value="${p.mobile}">${p.name} (${p.mobile})</option>`;
 
-        // Pathology
-        if (p.pathologyTests && p.pathologyTests !== "None") {
-          pathHtml += `
-            <div class="patient-card">
-              <div class="patient-header">
-                <div><strong>${p.name}</strong> (${p.gender}, ${p.age} yrs)<br><small>Mob: ${p.mobile}</small></div>
-                <span class="badge ${p.pathologyStatus === 'Completed' ? 'badge-done' : 'badge-pending'}">${p.pathologyStatus}</span>
+        // Pathology Card
+        const pathTestsText = p.pathologyTests ? p.pathologyTests : '<span style="color:#94a3b8; font-style:italic;">No Test Prescribed</span>';
+        pathHtml += `
+          <div class="patient-card">
+            <div class="patient-header">
+              <div>
+                <span class="patient-name">${p.name}</span> (${p.gender}, ${p.age} yrs)
+                <div class="patient-meta">Mob: ${p.mobile} | BP: ${p.bp || '-'} | Sugar: ${p.sugar || '-'}</div>
               </div>
-              <div class="readonly-box">
-                <p><strong>Prescribed Tests:</strong> <span style="color:#d97706;">${p.pathologyTests}</span></p>
-                <p><strong>Doctor Diagnosis:</strong> ${p.diagnosis || 'None'}</p>
-                ${p.pathologyReport ? `<p><strong>Uploaded Report:</strong> ${p.pathologyReport}</p>` : ''}
+              <span class="badge ${p.pathologyStatus === 'Completed' ? 'badge-done' : 'badge-pending'}">${p.pathologyStatus || 'Pending'}</span>
+            </div>
+            <div class="readonly-box">
+              <p><strong>Recommended Test:</strong> <span style="color:#d97706; font-weight:bold;">${pathTestsText}</span></p>
+              ${p.pathologyReport ? `<p style="color:#059669;"><strong>Uploaded Lab Report:</strong> ${p.pathologyReport}</p>` : ''}
+            </div>
+            <div class="action-box">
+              <input type="text" id="path_res_${p.mobile}" placeholder="e.g. Hemoglobin 12.5, TLC Normal" style="margin-bottom:6px;">
+              <button class="btn btn-amber" type="button" onclick="savePathReport('${p.mobile}')">Upload Lab Report</button>
+            </div>
+          </div>`;
+
+        // Radiology Card
+        const radTestsText = p.radiologyTests ? p.radiologyTests : '<span style="color:#94a3b8; font-style:italic;">No X-Ray Prescribed</span>';
+        radHtml += `
+          <div class="patient-card">
+            <div class="patient-header">
+              <div>
+                <span class="patient-name">${p.name}</span> (${p.gender}, ${p.age} yrs)
+                <div class="patient-meta">Mob: ${p.mobile}</div>
               </div>
-              <div class="action-box">
-                <input type="text" id="path_res_${p.mobile}" placeholder="Test Result / Values" style="margin-bottom:6px;">
-                <button class="btn btn-amber" type="button" onclick="savePathReport('${p.mobile}')">Upload Lab Report</button>
+              <span class="badge ${p.radiologyStatus === 'Completed' ? 'badge-done' : 'badge-pending'}">${p.radiologyStatus || 'Pending'}</span>
+            </div>
+            <div class="readonly-box">
+              <p><strong>Advised X-Ray / Scan:</strong> <span style="color:#8b5cf6; font-weight:bold;">${radTestsText}</span></p>
+              ${p.radiologyReport ? `<p style="color:#059669;"><strong>Radiology Report:</strong> ${p.radiologyReport}</p>` : ''}
+            </div>
+            <div class="action-box">
+              <input type="text" id="rad_res_${p.mobile}" placeholder="Scan report impression..." style="margin-bottom:6px;">
+              <button class="btn btn-purple" type="button" onclick="saveRadReport('${p.mobile}')">Submit Scan Report</button>
+            </div>
+          </div>`;
+
+        // Pharmacy Card
+        const medsText = p.medicines ? p.medicines : '<span style="color:#94a3b8; font-style:italic;">No Medicines Prescribed</span>';
+        pharmHtml += `
+          <div class="patient-card">
+            <div class="patient-header">
+              <div>
+                <span class="patient-name">${p.name}</span> (${p.gender}, ${p.age} yrs)
+                <div class="patient-meta">Mob: ${p.mobile}</div>
               </div>
-            </div>`;
-        }
-
-        // Radiology
-        if (p.radiologyTests && p.radiologyTests !== "None") {
-          radHtml += `
-            <div class="patient-card">
-              <div class="patient-header">
-                <div><strong>${p.name}</strong> (${p.gender}, ${p.age} yrs)<br><small>Mob: ${p.mobile}</small></div>
-                <span class="badge ${p.radiologyStatus === 'Completed' ? 'badge-done' : 'badge-pending'}">${p.radiologyStatus}</span>
-              </div>
-              <div class="readonly-box">
-                <p><strong>Advised X-Ray/Scan:</strong> <span style="color:#8b5cf6;">${p.radiologyTests}</span></p>
-                ${p.radiologyReport ? `<p><strong>Radiology Report:</strong> ${p.radiologyReport}</p>` : ''}
-              </div>
-              <div class="action-box">
-                <input type="text" id="rad_res_${p.mobile}" placeholder="Scan Impression / Report" style="margin-bottom:6px;">
-                <button class="btn btn-purple" type="button" onclick="saveRadReport('${p.mobile}')">Submit Scan Report</button>
-              </div>
-            </div>`;
-        }
-
-        // Pharmacy
-        if (p.medicines && p.medicines !== "None") {
-          pharmHtml += `
-            <div class="patient-card">
-              <div class="patient-header">
-                <div><strong>${p.name}</strong> (${p.gender}, ${p.age} yrs)<br><small>Mob: ${p.mobile}</small></div>
-                <span class="badge ${p.pharmacyStatus === 'Dispensed' ? 'badge-done' : 'badge-pending'}">${p.pharmacyStatus}</span>
-              </div>
-              <div class="readonly-box">
-                <p><strong>Prescription:</strong> <span style="color:#0284c7; font-weight:bold;">${p.medicines}</span></p>
-              </div>
-              <div class="action-box">
-                <button class="btn btn-green" type="button" onclick="dispenseMed('${p.mobile}')">Mark Medicines as Dispensed</button>
-              </div>
-            </div>`;
-        }
-      });
-
-      document.getElementById('pathology_records_list').innerHTML = pathHtml || '<p style="color:#64748b;">No active tests.</p>';
-      document.getElementById('radiology_records_list').innerHTML = radHtml || '<p style="color:#64748b;">No active radiology requests.</p>';
-      document.getElementById('pharmacy_records_list').innerHTML = pharmHtml || '<p style="color:#64748b;">No active prescriptions.</p>';
-    });
-
-    // REGISTRATION
-    async function registerPatient() {
-      const mob = document.getElementById('reg_mobile').value.trim();
-      const nm = document.getElementById('reg_name').value.trim();
-      const ag = document.getElementById('reg_age').value.trim();
-      const gen = document.getElementById('reg_gender').value;
-
-      if (!mob || !nm || !ag) {
-        alert("Saare fields bharna zaroori hai!");
-        return;
-      }
-
-      await db.collection("patients").doc(mob).set({
-        mobile: mob,
-        name: nm,
-        age: ag,
-        gender: gen,
-        diagnosis: "Pending Consultation",
-        pathologyTests: "",
-        pathologyReport: "",
-        pathologyStatus: "None",
-        radiologyTests: "",
-        radiologyReport: "",
-        radiologyStatus: "None",
-        medicines: "",
-        pharmacyStatus: "None"
-      });
-
-      alert("Patient Register ho gaya!");
-      document.getElementById('reg_mobile').value = "";
-      document.getElementById('reg_name').value = "";
-      document.getElementById('reg_age').value = "";
-    }
-
-    // DOCTOR VIEW
-    function displaySelectedPatientDetails() {
-      const mob = document.getElementById('doc_patient_select').value;
-      const p = cachedPatients.find(x => x.mobile === mob);
-      if (p) {
-        document.getElementById('doc_diagnosis').value = p.diagnosis === "Pending Consultation" ? "" : (p.diagnosis || "");
-        document.getElementById('doc_path_test').value = p.pathologyTests || "";
-        document.getElementById('doc_rad_test').value = p.radiologyTests || "";
-        document.getElementById('doc_medicines').value = p.medicines || "";
-      }
-    }
-
-    async function saveDoctorAdvice() {
-      if (currentRole !== 'doc') {
-        alert("Sirf Doctor hi prescription badal sakte hain!");
-        return;
-      }
-      const mob = document.getElementById('doc_patient_select').value;
-      if (!mob) {
-        alert("Patient select karein!");
-        return;
-      }
-      const diag = document.getElementById('doc_diagnosis').value.trim();
-      const pathT = document.getElementById('doc_path_test').value.trim();
-      const radT = document.getElementById('doc_rad_test').value.trim();
-      const meds = document.getElementById('doc_medicines').value.trim();
-
-      await db.collection("patients").doc(mob).update({
-        diagnosis: diag,
-        pathologyTests: pathT,
-        pathologyStatus: pathT ? "Pending" : "None",
-        radiologyTests: radT,
-        radiologyStatus: radT ? "Pending" : "None",
-        medicines: meds,
-        pharmacyStatus: meds ? "Pending" : "None"
-      });
-
-      alert("Advice save & sync ho gayi!");
-    }
-
-    // PATHOLOGY
-    async function savePathReport(mob) {
-      if (currentRole !== 'path') {
-        alert("Sirf Pathology portal se report upload ho sakti hai!");
-        return;
-      }
-      const val = document.getElementById('path_res_' + mob).value.trim();
-      if (!val) {
-        alert("Report likhiye!");
-        return;
-      }
-      await db.collection("patients").doc(mob).update({
-        pathologyReport: val,
-        pathologyStatus: "Completed"
-      });
-      alert("Report upload ho gayi!");
-    }
-
-    // RADIOLOGY
-    async function saveRadReport(mob) {
-      if (currentRole !== 'rad') {
-        alert("Sirf Radiology portal se report upload ho sakti hai!");
-        return;
-      }
-      const val = document.getElementById('rad_res_' + mob).value.trim();
-      if (!val) {
-        alert("Impression report likhiye!");
-        return;
-      }
-      await db.collection("patients").doc(mob).update({
-        radiologyReport: val,
-        radiologyStatus: "Completed"
-      });
-      alert("Radiology report submit ho gayi!");
-    }
-
-    // PHARMACY
-    async function dispenseMed(mob) {
-      if (currentRole !== 'pharm') {
-        alert("Sirf Pharmacy portal se dawa dispense ki ja sakti hai!");
-        return;
-      }
-      await db.collection("patients").doc(mob).update({
-        pharmacyStatus: "Dispensed"
-      });
-      alert("Medicines Dispensed mark ho gayi!");
-    }
-  </script>
-</body>
-</html>
+              <span class="badge ${p.pharmacyStatus === 'Dispensed' ? 'badge-done' : 'badge-pending'}">${p.pharmacyStatus || 'Pending'}</span>
+            </div>
+            <d
