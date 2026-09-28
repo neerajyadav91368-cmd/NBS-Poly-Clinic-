@@ -50,7 +50,6 @@
     .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
     .badge-pending { background: #fef3c7; color: #b45309; }
     .badge-done { background: #dcfce7; color: #15803d; }
-    #loginError { color: #dc2626; font-size: 13px; font-weight: bold; margin-top: 8px; text-align: center; }
 
     /* PRINT RECEIPT STYLING */
     #printableParcha { display: none; background: white; padding: 25px; border: 1px solid #000; color: #000; font-family: Arial, sans-serif; }
@@ -69,6 +68,53 @@
       #printableParcha { display: block !important; position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 20px; }
     }
   </style>
+
+  <script>
+    // LOGIN LOGIC IN HEAD (Load hote hi sabse pehle ye chalu hoga)
+    const PASSWORDS = { reg: "1111", doc: "2222", path: "3333", rad: "4444", pharm: "5555" };
+    let currentRole = null;
+
+    function doLogin() {
+      const dept = document.getElementById('login_dept').value;
+      const pass = document.getElementById('login_password').value.trim();
+
+      if (PASSWORDS[dept] === pass) {
+        currentRole = dept;
+        document.getElementById('authSection').style.display = 'none';
+        document.getElementById('mainAppSection').style.display = 'block';
+
+        const labels = {
+          reg: "Registration Reception",
+          doc: "Doctor Consultation",
+          path: "Pathology Lab",
+          rad: "Radiology Portal",
+          pharm: "Pharmacy Portal"
+        };
+
+        document.getElementById('currentDeptLabel').innerText = labels[dept];
+        switchTab(dept);
+      } else {
+        alert("Galat Password! Sahi PIN dalein:\nRegistration: 1111\nDoctor: 2222\nPathology: 3333\nRadiology: 4444\nPharmacy: 5555");
+      }
+    }
+
+    function doLogout() {
+      currentRole = null;
+      document.getElementById('login_password').value = "";
+      document.getElementById('mainAppSection').style.display = 'none';
+      document.getElementById('authSection').style.display = 'block';
+    }
+
+    function switchTab(tabId) {
+      const tabs = ['reg', 'doc', 'path', 'rad', 'pharm'];
+      tabs.forEach(t => {
+        const sec = document.getElementById('section_' + t);
+        const btn = document.getElementById('btn_' + t);
+        if (sec) sec.style.display = (t === tabId) ? 'block' : 'none';
+        if (btn) btn.classList.toggle('active', t === tabId);
+      });
+    }
+  </script>
 </head>
 <body>
 
@@ -94,11 +140,10 @@
 
     <div class="form-group">
       <label>Password / PIN Dalein:</label>
-      <input type="password" id="login_password" placeholder="Enter PIN">
+      <input type="password" id="login_password" placeholder="Enter PIN" onkeydown="if(event.key==='Enter') doLogin()">
     </div>
 
     <button type="button" class="btn" onclick="doLogin()">Login Karein</button>
-    <div id="loginError"></div>
   </div>
 
   <!-- MAIN APP -->
@@ -289,54 +334,6 @@
   </div>
 
   <script>
-    // GLOBAL PASSWORDS
-    const PASSWORDS = { reg: "1111", doc: "2222", path: "3333", rad: "4444", pharm: "5555" };
-    let currentRole = null;
-
-    // DIRECT LOGIN FUNCTION
-    function doLogin() {
-      const dept = document.getElementById('login_dept').value;
-      const pass = document.getElementById('login_password').value.trim();
-      const errEl = document.getElementById('loginError');
-
-      if (PASSWORDS[dept] === pass) {
-        currentRole = dept;
-        errEl.innerText = "";
-        document.getElementById('authSection').style.display = 'none';
-        document.getElementById('mainAppSection').style.display = 'block';
-
-        const labels = {
-          reg: "Registration Reception",
-          doc: "Doctor Consultation",
-          path: "Pathology Lab",
-          rad: "Radiology Portal",
-          pharm: "Pharmacy Portal"
-        };
-
-        document.getElementById('currentDeptLabel').innerText = labels[dept];
-        switchTab(dept);
-      } else {
-        errEl.innerText = "Galat Password! Sahi PIN dalein (Jaise: 1111)";
-      }
-    }
-
-    // DIRECT LOGOUT FUNCTION
-    function doLogout() {
-      currentRole = null;
-      document.getElementById('login_password').value = "";
-      document.getElementById('loginError').innerText = "";
-      document.getElementById('mainAppSection').style.display = 'none';
-      document.getElementById('authSection').style.display = 'block';
-    }
-
-    function switchTab(tabId) {
-      const tabs = ['reg', 'doc', 'path', 'rad', 'pharm'];
-      tabs.forEach(t => {
-        document.getElementById('section_' + t).style.display = (t === tabId) ? 'block' : 'none';
-        document.getElementById('btn_' + t).classList.toggle('active', t === tabId);
-      });
-    }
-
     // FIREBASE INITIALIZATION
     let db = null;
     let cachedPatients = [];
@@ -359,8 +356,8 @@
       db.collection("patients").onSnapshot((snapshot) => {
         cachedPatients = [];
         const docSelect = document.getElementById('doc_patient_select');
-        const selectedVal = docSelect.value;
-        docSelect.innerHTML = '<option value="">-- Select Patient --</option>';
+        const selectedVal = docSelect ? docSelect.value : "";
+        if (docSelect) docSelect.innerHTML = '<option value="">-- Select Patient --</option>';
 
         let pathHtml = '';
         let radHtml = '';
@@ -377,7 +374,7 @@
           const p = doc.data();
           cachedPatients.push(p);
 
-          docSelect.innerHTML += `<option value="${p.mobile}">${p.name} (${p.mobile})</option>`;
+          if (docSelect) docSelect.innerHTML += `<option value="${p.mobile}">${p.name} (${p.mobile})</option>`;
 
           // Pathology Card
           const pathTestsText = p.pathologyTests ? p.pathologyTests : '<span style="color:#94a3b8; font-style:italic;">No Test Prescribed</span>';
@@ -429,4 +426,5 @@
                 <div>
                   <span class="patient-name">${p.name}</span> (${p.gender}, ${p.age} yrs)
                   <div class="patient-meta">Mob: ${p.mobile}</div>
-                <
+                </div>
+                <span class="badge ${p.pharmacyStatus =
