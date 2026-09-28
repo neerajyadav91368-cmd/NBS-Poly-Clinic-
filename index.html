@@ -1,391 +1,238 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="hi">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-<meta name="theme-color" content="#1463d9">
-<title>NBS Poly Clinic</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NBS Poly Clinic Management System</title>
+  
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-<!-- Home screen app icon aur browser icon -->
-<link rel="icon" type="image/png" href="https://github.com/neerajyadav91368-cmd.png">
-<link rel="apple-touch-icon" href="https://github.com/neerajyadav91368-cmd.png">
-
-<style>
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f6f8fb;color:#1a202c;padding-bottom:75px}
-header{background:#1463d9;color:#fff;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
-.brand-box{display:flex;align-items:center;gap:10px}
-.brand-logo{width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid #fff;background:#fff}
-.brand h1{margin:0;font-size:17px;font-weight:700}
-.brand p{margin:2px 0 0;font-size:11px;opacity:0.9}
-.container{padding:14px;max-width:600px;margin:auto}
-.card{background:#fff;border-radius:14px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);margin-bottom:14px}
-.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.stat{text-align:center;padding:10px;background:#f0f5ff;border-radius:10px}
-.stat b{font-size:22px;color:#1463d9;display:block;margin-top:4px}
-label{font-size:12px;font-weight:600;color:#4a5568;display:block;margin:8px 0 4px}
-input,select,textarea{width:100%;padding:11px;border:1px solid #cbd5e0;border-radius:8px;font-size:14px;background:#fff;outline:none}
-input:focus,textarea:focus{border-color:#1463d9}
-textarea{min-height:70px;resize:vertical}
-.btn{width:100%;border:0;border-radius:8px;padding:12px;background:#1463d9;color:#fff;font-size:14px;font-weight:bold;cursor:pointer;margin-top:10px}
-.btn:active{background:#0e4bb5}
-.btn.secondary{background:#edf2f7;color:#2d3748;margin-top:8px}
-.btn.danger{background:#e53e3e;color:#fff;padding:6px 12px;width:auto;margin:0;font-size:12px}
-
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:65px;background:#fff;display:flex;border-top:1px solid #e2e8f0;z-index:100}
-.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;color:#718096;border:0;background:transparent;cursor:pointer;padding:4px 0}
-.nav-item.active{color:#1463d9;font-weight:bold}
-.nav-item span{font-size:18px;margin-bottom:2px}
-
-.hidden{display:none !important}
-table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
-th,td{padding:8px;border-bottom:1px solid #edf2f7;text-align:left}
-</style>
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #f4f7f6; margin: 0; padding: 15px; color: #333; }
+    .header { text-align: center; margin-bottom: 20px; }
+    .header h1 { color: #0284c7; margin: 5px 0; }
+    .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; }
+    .nav-tabs button { padding: 10px 20px; border: none; background: #cbd5e1; border-radius: 8px; cursor: pointer; font-weight: bold; }
+    .nav-tabs button.active { background: #0284c7; color: white; }
+    .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    .form-group { margin-bottom: 12px; }
+    label { display: block; font-weight: 600; margin-bottom: 5px; }
+    input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; }
+    .btn { background: #0284c7; color: white; padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; font-size: 15px; }
+    .btn:hover { background: #0369a1; }
+    .pending-item { border-left: 4px solid #f59e0b; padding: 12px; margin-bottom: 10px; background: #fffbeb; border-radius: 4px; }
+    .completed-item { border-left: 4px solid #10b981; padding: 12px; margin-bottom: 10px; background: #ecfdf5; border-radius: 4px; }
+    .badge { display: inline-block; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+    .badge-pending { background: #fef3c7; color: #b45309; }
+    .badge-completed { background: #d1fae5; color: #065f46; }
+  </style>
 </head>
 <body>
 
-<!-- LOGIN MODAL SCREEN -->
-<div id="loginOverlay" style="position:fixed;inset:0;background:#f6f8fb;z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;">
-  <div class="card" style="width:100%;max-width:380px;text-align:center;">
-    <img src="https://github.com/neerajyadav91368-cmd.png" style="width:65px;height:65px;border-radius:50%;margin-bottom:8px;border:2px solid #1463d9">
-    <h2 style="margin:0 0 4px;color:#1463d9">NBS Poly Clinic</h2>
-    <p style="font-size:12px;color:#718096;margin-bottom:18px">Staff Access Portal</p>
-    
-    <label style="text-align:left">Select Role</label>
-    <select id="userRole">
-      <option value="doctor">Doctor / Admin</option>
-      <option value="pathology">Pathology Lab</option>
-      <option value="pharmacy">Pharmacy</option>
-      <option value="radiology">X-Ray & Ultrasound</option>
-    </select>
-    
-    <label style="text-align:left;margin-top:10px">Access PIN</label>
-    <input id="userPin" type="password" placeholder="Enter PIN">
-    
-    <button class="btn" onclick="handleLogin()">Login to Portal</button>
-    <div style="font-size:11px;color:#718096;margin-top:14px;text-align:left;background:#edf2f7;padding:8px;border-radius:6px">
-      <b>PINs:</b> Doctor: 1111 | Lab: 2222 | Pharma: 3333 | Radiology: 4444
+  <div class="header">
+    <h1>NBS Poly Clinic</h1>
+    <p>Doctor & Pathology Real-Time Sync Portal</p>
+  </div>
+
+  <div class="nav-tabs">
+    <button id="tabDoctorBtn" class="active" onclick="switchTab('doctor')">Doctor Portal</button>
+    <button id="tabLabBtn" onclick="switchTab('lab')">Pathology Lab</button>
+  </div>
+
+  <!-- DOCTOR SECTION -->
+  <div id="doctorSection">
+    <div class="card">
+      <h3>Add Patient & Prescribe Test</h3>
+      <div class="form-group">
+        <label>Patient ID / Mobile Number:</label>
+        <input type="text" id="patientId" placeholder="e.g. 9876543210">
+      </div>
+      <div class="form-group">
+        <label>Patient Name:</label>
+        <input type="text" id="patientName" placeholder="e.g. Rahul Sharma">
+      </div>
+      <div class="form-group">
+        <label>Advised Tests (Comma separated):</label>
+        <input type="text" id="testsAdvised" placeholder="e.g. CBC, Lipid Profile, Urine">
+      </div>
+      <div class="form-group">
+        <label>Clinical Notes / Symptoms:</label>
+        <textarea id="notes" rows="2" placeholder="Fever, weakness..."></textarea>
+      </div>
+      <button class="btn" onclick="submitClinicalVisit()">Send to Lab (Sync Live)</button>
+    </div>
+
+    <div class="card">
+      <h3>Completed Lab Reports (Live Auto-Update)</h3>
+      <div id="doctorReportsList">
+        <p style="color: #666;">No reports uploaded yet.</p>
+      </div>
     </div>
   </div>
-</div>
 
-<header>
-  <div class="brand-box">
-    <img src="https://github.com/neerajyadav91368-cmd.png" alt="Logo" class="brand-logo">
-    <div class="brand">
-      <h1>NBS Poly Clinic</h1>
-      <p id="roleDisplay">Logged in: Doctor</p>
+  <!-- PATHOLOGY SECTION -->
+  <div id="labSection" style="display: none;">
+    <div class="card">
+      <h3>Pending Tests From Doctor (Live Sync)</h3>
+      <div id="labPendingList">
+        <p style="color: #666;">No pending tests from doctor.</p>
+      </div>
     </div>
   </div>
-  <button class="btn danger" onclick="logout()">Logout</button>
-</header>
 
-<div class="container">
-  <!-- DASHBOARD -->
-  <section id="dashboard">
-    <div class="card">
-      <h3 style="margin-top:0">Clinic Overview</h3>
-      <div class="stats">
-        <div class="stat">Patients<b id="patientCount">0</b></div>
-        <div class="stat">Visits<b id="visitCount">0</b></div>
-        <div class="stat">Lab Tests<b id="reportCount">0</b></div>
-        <div class="stat">Pharmacy<b id="dispenseCount">0</b></div>
-      </div>
-    </div>
-    <div class="card">
-      <button class="btn" onclick="switchTab('patients')">➕ New Patient Register</button>
-      <button class="btn secondary" onclick="switchTab('visit')">🩺 Add Clinical Visit</button>
-    </div>
-  </section>
+  <script>
+    // 1. Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBeSB_UJsWo1hYav9VCk3Srk67p4",
+      authDomain: "nbs-poly-clinic.firebaseapp.com",
+      projectId: "nbs-poly-clinic",
+      storageBucket: "nbs-poly-clinic.appspot.com",
+      messagingSenderId: "836155988202",
+      appId: "1:836155988202:web:0419cb6ee23fb1",
+      measurementId: "G-6FKEMC96WB"
+    };
 
-  <!-- PATIENTS -->
-  <section id="patients" class="hidden">
-    <div class="card">
-      <h3 style="margin-top:0">Patient Registration</h3>
-      <label>Patient Name *</label>
-      <input id="pname" placeholder="Full Name">
-      <label>Mobile Number *</label>
-      <input id="pmobile" type="tel" placeholder="10-digit number">
-      <div style="display:flex;gap:10px">
-        <div style="flex:1"><label>Age</label><input id="page" type="number" placeholder="Age"></div>
-        <div style="flex:1"><label>Gender</label><select id="pgender"><option>Male</option><option>Female</option><option>Other</option></select></div>
-      </div>
-      <label>Address</label>
-      <textarea id="paddress" placeholder="Village / Area"></textarea>
-      <button class="btn" onclick="addPatient()">Save Patient</button>
-    </div>
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-    <div class="card">
-      <h3 style="margin-top:0">Search Records</h3>
-      <input id="search" oninput="renderPatients()" placeholder="Search name or mobile...">
-      <div id="patientTable" style="overflow-x:auto;"></div>
-    </div>
-  </section>
+    // 2. Tab Navigation
+    function switchTab(tab) {
+      if (tab === 'doctor') {
+        document.getElementById('doctorSection').style.display = 'block';
+        document.getElementById('labSection').style.display = 'none';
+        document.getElementById('tabDoctorBtn').classList.add('active');
+        document.getElementById('tabLabBtn').classList.remove('active');
+      } else {
+        document.getElementById('doctorSection').style.display = 'none';
+        document.getElementById('labSection').style.display = 'block';
+        document.getElementById('tabDoctorBtn').classList.remove('active');
+        document.getElementById('tabLabBtn').classList.add('active');
+      }
+    }
 
-  <!-- CLINICAL VISIT -->
-  <section id="visit" class="hidden">
-    <div class="card">
-      <h3 style="margin-top:0">New Clinical Visit</h3>
-      <label>Patient ID / Mobile *</label>
-      <input id="vpatient" placeholder="Enter ID or mobile">
-      <label>Visit Date</label>
-      <input id="vdate" type="date">
-      <label>Chief Complaints</label>
-      <input id="vcc" placeholder="Fever, cough, pain...">
-      <div style="display:flex;gap:10px">
-        <div style="flex:1"><label>BP</label><input id="vbp" placeholder="120/80"></div>
-        <div style="flex:1"><label>Pulse</label><input id="vpulse" placeholder="72"></div>
-      </div>
-      <label>Diagnosis</label>
-      <textarea id="vdiag" placeholder="Diagnosis"></textarea>
-      <label>Prescription (Rx)</label>
-      <textarea id="vrx" placeholder="Medicine — Dose — Days"></textarea>
-      <label>Advised Tests / Scans</label>
-      <textarea id="vinv" placeholder="CBC, USG Whole Abdomen, X-Ray Chest..."></textarea>
-      <button class="btn" onclick="saveVisit()">Save Visit</button>
-    </div>
-  </section>
+    // 3. DOCTOR: Add Patient Visit and Send to Lab
+    async function submitClinicalVisit() {
+      const pId = document.getElementById('patientId').value.trim();
+      const pName = document.getElementById('patientName').value.trim();
+      const pTests = document.getElementById('testsAdvised').value.trim();
+      const pNotes = document.getElementById('notes').value.trim();
 
-  <!-- PATHOLOGY -->
-  <section id="pathology" class="hidden">
-    <div class="card">
-      <h3 style="margin-top:0">🧪 Pathology Lab Reports</h3>
-      <label>Patient ID / Mobile *</label>
-      <input id="labPatient" placeholder="Enter Patient ID or Mobile">
-      <label>Test Name</label>
-      <input id="labTest" placeholder="CBC, Blood Sugar, Lipid Profile, etc.">
-      <label>Test Values / Result Summary</label>
-      <textarea id="labNotes" placeholder="Enter findings & values"></textarea>
-      <label>Upload Lab Report (PDF / Image)</label>
-      <input type="file" id="labFile" accept="image/*,.pdf" style="padding:8px">
-      <button class="btn" onclick="saveLabReport()">Upload Lab Report</button>
-    </div>
-    <div class="card">
-      <h3 style="margin-top:0">Pathology Records</h3>
-      <div id="labList" style="font-size:13px;color:#4a5568">Koi report upload nahi hui.</div>
-    </div>
-  </section>
+      if (!pId || !pName || !pTests) {
+        alert("Kripya Patient ID, Name aur Tests bharein!");
+        return;
+      }
 
-  <!-- PHARMACY -->
-  <section id="pharmacy" class="hidden">
-    <div class="card">
-      <h3 style="margin-top:0">💊 Pharmacy Dispensing & Bill</h3>
-      <label>Patient ID / Mobile *</label>
-      <input id="pharmaPatient" placeholder="Enter Patient ID or Mobile">
-      <label>Medicines Dispensed</label>
-      <textarea id="pharmaNotes" placeholder="Tab Paracetamol - 10, Syp Amox - 1 bottle"></textarea>
-      <label>Bill Amount (₹)</label>
-      <input id="pharmaAmount" type="number" placeholder="Enter total amount">
-      <label>Upload Pharmacy Bill Receipt (Photo)</label>
-      <input type="file" id="pharmaBillFile" accept="image/*,.pdf" style="padding:8px">
-      <button class="btn" onclick="savePharmacy()">Save & Upload Bill</button>
-    </div>
-    <div class="card">
-      <h3 style="margin-top:0">Dispensed & Bills History</h3>
-      <div id="pharmaList" style="font-size:13px;color:#4a5568">Koi bill record nahi hai.</div>
-    </div>
-  </section>
+      try {
+        await db.collection("visits").add({
+          patientId: pId,
+          patientName: pName,
+          tests: pTests,
+          notes: pNotes,
+          status: "pending_lab",
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
 
-  <!-- RADIOLOGY -->
-  <section id="radiology" class="hidden">
-    <div class="card">
-      <h3 style="margin-top:0">🩻 X-Ray & Ultrasound Portal</h3>
-      <label>Patient ID / Mobile *</label>
-      <input id="radPatient" placeholder="Enter Patient ID or Mobile">
-      <label>Scan Type</label>
-      <select id="radType">
-        <option>Ultrasound (USG)</option>
-        <option>X-Ray</option>
-        <option>ECG</option>
-      </select>
-      <label>Findings / Impression</label>
-      <textarea id="radNotes" placeholder="Radiologist impressions / findings..."></textarea>
-      <label>Upload Scan Film / Report (Photo / PDF)</label>
-      <input type="file" id="radFile" accept="image/*,.pdf" style="padding:8px">
-      <button class="btn" onclick="saveRadiology()">Upload Scan Report</button>
-    </div>
-    <div class="card">
-      <h3 style="margin-top:0">Radiology Records</h3>
-      <div id="radList" style="font-size:13px;color:#4a5568">Koi scan report upload nahi hui.</div>
-    </div>
-  </section>
-</div>
+        alert("Patient record lab ko live bhej diya gaya!");
+        document.getElementById('patientId').value = '';
+        document.getElementById('patientName').value = '';
+        document.getElementById('testsAdvised').value = '';
+        document.getElementById('notes').value = '';
+      } catch (err) {
+        alert("Error: " + err.message);
+      }
+    }
 
-<div class="bottom-nav" id="bottomNav"></div>
+    // 4. PATHOLOGY: Listen for Realtime Pending Tests
+    function startLabRealtimeSync() {
+      db.collection("visits")
+        .where("status", "==", "pending_lab")
+        .onSnapshot((snapshot) => {
+          const container = document.getElementById('labPendingList');
+          if (snapshot.empty) {
+            container.innerHTML = "<p style='color:#666;'>Koi pending lab test nahi hai.</p>";
+            return;
+          }
 
-<script>
-const DB_KEY = 'nbs_clinic_db';
-let db = JSON.parse(localStorage.getItem(DB_KEY) || '{"patients":[],"visits":[],"reports":[],"pharmacy":[],"radiology":[]}');
-if(!db.reports) db.reports = [];
-if(!db.pharmacy) db.pharmacy = [];
-if(!db.radiology) db.radiology = [];
+          let html = "";
+          snapshot.forEach((doc) => {
+            const data = doc.data();
+            html += `
+              <div class="pending-item">
+                <p><strong>Patient ID:</strong> ${data.patientId} | <strong>Name:</strong> ${data.patientName}</p>
+                <p><strong>Tests Advised:</strong> <span style="color:#d97706; font-weight:bold;">${data.tests}</span></p>
+                <p><strong>Doctor Notes:</strong> ${data.notes || 'None'}</p>
+                
+                <div style="margin-top: 10px;">
+                  <input type="text" id="reportResult_${doc.id}" placeholder="Enter lab findings / report values" style="margin-bottom:8px;">
+                  <button class="btn" style="background:#10b981;" onclick="submitReport('${doc.id}', '${data.patientId}', '${data.patientName}', '${data.tests}')">Submit Report</button>
+                </div>
+              </div>
+            `;
+          });
+          container.innerHTML = html;
+        });
+    }
 
-const PINS = {
-  doctor: '1111',
-  pathology: '2222',
-  pharmacy: '3333',
-  radiology: '4444'
-};
+    // 5. PATHOLOGY: Submit Completed Report
+    async function submitReport(visitId, pId, pName, testName) {
+      const resultVal = document.getElementById('reportResult_' + visitId).value.trim();
+      if (!resultVal) {
+        alert("Report details likhiye!");
+        return;
+      }
 
-let currentRole = localStorage.getItem('nbs_active_role') || null;
+      try {
+        await db.collection("reports").add({
+          visitId: visitId,
+          patientId: pId,
+          patientName: pName,
+          testName: testName,
+          result: resultVal,
+          completedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
 
-function handleLogin(){
-  const role = document.getElementById('userRole').value;
-  const pin = document.getElementById('userPin').value.trim();
-  if(pin === PINS[role]){
-    currentRole = role;
-    localStorage.setItem('nbs_active_role', role);
-    document.getElementById('loginOverlay').classList.add('hidden');
-    document.getElementById('userPin').value = '';
-    initAppForRole();
-  } else {
-    alert('Galat PIN! Kripya sahi PIN daalein.');
-  }
-}
+        await db.collection("visits").doc(visitId).update({
+          status: "completed"
+        });
 
-function logout(){
-  localStorage.removeItem('nbs_active_role');
-  currentRole = null;
-  document.getElementById('loginOverlay').classList.remove('hidden');
-}
+        alert("Report complete ho kar doctor ke dashboard par update ho gayi!");
+      } catch (err) {
+        alert("Error submitting report: " + err.message);
+      }
+    }
 
-function initAppForRole(){
-  const roleDisplay = document.getElementById('roleDisplay');
-  const bottomNav = document.getElementById('bottomNav');
-  
-  if(currentRole === 'doctor'){
-    roleDisplay.innerText = 'Doctor / Admin Portal';
-    bottomNav.innerHTML = `
-      <button class="nav-item active" onclick="switchTab('dashboard', this)"><span>🏠</span>Home</button>
-      <button class="nav-item" onclick="switchTab('patients', this)"><span>👤</span>Patients</button>
-      <button class="nav-item" onclick="switchTab('visit', this)"><span>🩺</span>Visit</button>
-      <button class="nav-item" onclick="switchTab('pathology', this)"><span>🧪</span>Lab</button>
-      <button class="nav-item" onclick="switchTab('pharmacy', this)"><span>💊</span>Pharma</button>
-      <button class="nav-item" onclick="switchTab('radiology', this)"><span>🩻</span>Scan</button>
-    `;
-    switchTab('dashboard');
-  } else if(currentRole === 'pathology'){
-    roleDisplay.innerText = 'Pathology Lab Section';
-    bottomNav.innerHTML = `<button class="nav-item active" onclick="switchTab('pathology', this)"><span>🧪</span>Lab Reports</button>`;
-    switchTab('pathology');
-  } else if(currentRole === 'pharmacy'){
-    roleDisplay.innerText = 'Pharmacy Dispensing Section';
-    bottomNav.innerHTML = `<button class="nav-item active" onclick="switchTab('pharmacy', this)"><span>💊</span>Pharmacy & Bills</button>`;
-    switchTab('pharmacy');
-  } else if(currentRole === 'radiology'){
-    roleDisplay.innerText = 'X-Ray & Ultrasound Section';
-    bottomNav.innerHTML = `<button class="nav-item active" onclick="switchTab('radiology', this)"><span>🩻</span>X-Ray / USG</button>`;
-    switchTab('radiology');
-  }
-  syncDB();
-}
+    // 6. DOCTOR: Listen for Realtime Completed Reports
+    function startDoctorReportsSync() {
+      db.collection("reports")
+        .orderBy("completedAt", "desc")
+        .onSnapshot((snapshot) => {
+          const container = document.getElementById('doctorReportsList');
+          if (snapshot.empty) {
+            container.innerHTML = "<p style='color:#666;'>No reports completed yet.</p>";
+            return;
+          }
 
-function switchTab(id, btn){
-  document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-  document.getElementById(id).classList.remove('hidden');
-  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  if(id === 'patients') renderPatients();
-  if(id === 'pathology') renderLab();
-  if(id === 'pharmacy') renderPharma();
-  if(id === 'radiology') renderRad();
-}
+          let html = "";
+          snapshot.forEach((doc) => {
+            const data = doc.data();
+            html += `
+              <div class="completed-item">
+                <p><strong>Patient ID:</strong> ${data.patientId} | <strong>Name:</strong> ${data.patientName} <span class="badge badge-completed">Report Ready</span></p>
+                <p><strong>Test:</strong> ${data.testName}</p>
+                <p><strong>Lab Findings / Result:</strong> ${data.result}</p>
+              </div>
+            `;
+          });
+          container.innerHTML = html;
+        });
+    }
 
-function syncDB(){
-  localStorage.setItem(DB_KEY, JSON.stringify(db));
-  if(document.getElementById('patientCount')) document.getElementById('patientCount').innerText = db.patients.length;
-  if(document.getElementById('visitCount')) document.getElementById('visitCount').innerText = db.visits.length;
-  if(document.getElementById('reportCount')) document.getElementById('reportCount').innerText = db.reports.length;
-  if(document.getElementById('dispenseCount')) document.getElementById('dispenseCount').innerText = db.pharmacy.length;
-}
-
-function addPatient(){
-  let name = pname.value.trim(), mobile = pmobile.value.trim();
-  if(!name || !mobile) return alert('Name aur mobile zaroori hai.');
-  let p = { id: 'NBS-' + Date.now().toString().slice(-5), name, mobile, age: page.value, gender: pgender.value, address: paddress.value };
-  db.patients.unshift(p);
-  syncDB();
-  ['pname','pmobile','page','paddress'].forEach(i => document.getElementById(i).value = '');
-  renderPatients();
-  alert('Patient registered! ID: ' + p.id);
-}
-
-function renderPatients(){
-  let q = (search.value || '').toLowerCase();
-  let filtered = db.patients.filter(p => (p.name + p.mobile + p.id).toLowerCase().includes(q));
-  let html = '<table><tr><th>ID</th><th>Name</th><th>Mobile</th></tr>';
-  filtered.forEach(p => {
-    html += `<tr><td><b>${p.id}</b></td><td>${p.name} (${p.gender[0]}/${p.age||'-'})</td><td>${p.mobile}</td></tr>`;
-  });
-  patientTable.innerHTML = html + '</table>';
-}
-
-function saveVisit(){
-  if(!vpatient.value.trim()) return alert('Patient ID ya Mobile zaroori hai.');
-  db.visits.push({
-    patient: vpatient.value.trim(), date: vdate.value, cc: vcc.value,
-    bp: vbp.value, pulse: vpulse.value, diagnosis: vdiag.value, rx: vrx.value, inv: vinv.value
-  });
-  syncDB();
-  alert('Clinical visit save ho gayi!');
-  ['vpatient','vcc','vbp','vpulse','vdiag','vrx','vinv'].forEach(i => document.getElementById(i).value = '');
-}
-
-function saveLabReport(){
-  let pid = labPatient.value.trim(), test = labTest.value.trim();
-  if(!pid || !test) return alert('Patient ID aur Test name required hai.');
-  db.reports.unshift({ patient: pid, test: test, notes: labNotes.value, date: new Date().toLocaleDateString() });
-  syncDB();
-  ['labPatient','labTest','labNotes','labFile'].forEach(i => document.getElementById(i).value = '');
-  renderLab();
-  alert('Lab report save ho gayi!');
-}
-
-function renderLab(){
-  if(!db.reports.length){ labList.innerHTML = 'Koi report upload nahi hui.'; return; }
-  let html = '<table><tr><th>ID</th><th>Test</th><th>Date</th></tr>';
-  db.reports.forEach(r => { html += `<tr><td><b>${r.patient}</b></td><td>${r.test}</td><td>${r.date}</td></tr>`; });
-  labList.innerHTML = html + '</table>';
-}
-
-function savePharmacy(){
-  let pid = pharmaPatient.value.trim(), notes = pharmaNotes.value.trim(), amt = pharmaAmount.value.trim();
-  if(!pid) return alert('Patient ID required hai.');
-  db.pharmacy.unshift({ patient: pid, notes: notes, amount: amt ? '₹' + amt : '-', date: new Date().toLocaleDateString() });
-  syncDB();
-  ['pharmaPatient','pharmaNotes','pharmaAmount','pharmaBillFile'].forEach(i => document.getElementById(i).value = '');
-  renderPharma();
-  alert('Pharmacy dispensing aur bill save ho gaya!');
-}
-
-function renderPharma(){
-  if(!db.pharmacy.length){ pharmaList.innerHTML = 'Koi record nahi hai.'; return; }
-  let html = '<table><tr><th>ID</th><th>Medicines</th><th>Bill</th></tr>';
-  db.pharmacy.forEach(p => { html += `<tr><td><b>${p.patient}</b></td><td>${p.notes}</td><td><b>${p.amount}</b></td></tr>`; });
-  pharmaList.innerHTML = html + '</table>';
-}
-
-function saveRadiology(){
-  let pid = radPatient.value.trim(), type = radType.value;
-  if(!pid) return alert('Patient ID required hai.');
-  db.radiology.unshift({ patient: pid, type: type, notes: radNotes.value, date: new Date().toLocaleDateString() });
-  syncDB();
-  ['radPatient','radNotes','radFile'].forEach(i => document.getElementById(i).value = '');
-  renderRad();
-  alert('Scan report save ho gayi!');
-}
-
-function renderRad(){
-  if(!db.radiology.length){ radList.innerHTML = 'Koi scan report upload nahi hui.'; return; }
-  let html = '<table><tr><th>ID</th><th>Type</th><th>Findings</th></tr>';
-  db.radiology.forEach(r => { html += `<tr><td><b>${r.patient}</b></td><td>${r.type}</td><td>${r.notes || '-'}</td></tr>`; });
-  radList.innerHTML = html + '</table>';
-}
-
-if(currentRole){
-  document.getElementById('loginOverlay').classList.add('hidden');
-  initAppForRole();
-}
-</script>
+    // Initialize listeners
+    startLabRealtimeSync();
+    startDoctorReportsSync();
+  </script>
 </body>
 </html>
