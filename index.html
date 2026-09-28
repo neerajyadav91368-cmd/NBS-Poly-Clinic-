@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NBS Poly Clinic Management System</title>
 
-  <!-- Firebase SDKs -->
+  <!-- Firebase Scripts -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
@@ -51,9 +51,7 @@
     .badge-pending { background: #fef3c7; color: #b45309; }
     .badge-done { background: #dcfce7; color: #15803d; }
 
-    .status-msg { margin-top: 10px; padding: 8px; border-radius: 6px; font-size: 13px; font-weight: bold; text-align: center; display: none; }
-    .msg-error { background: #fee2e2; color: #b91c1c; border: 1px solid #f87171; }
-    .msg-success { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+    #dbNotice { background: #fef08a; color: #854d0e; padding: 8px; border-radius: 6px; font-size: 12px; text-align: center; margin-bottom: 12px; display: none; }
 
     /* PRINT RECEIPT STYLING */
     #printableParcha { display: none; background: white; padding: 25px; border: 1px solid #000; color: #000; font-family: Arial, sans-serif; }
@@ -72,52 +70,6 @@
       #printableParcha { display: block !important; position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 20px; }
     }
   </style>
-
-  <script>
-    const PASSWORDS = { reg: "1111", doc: "2222", path: "3333", rad: "4444", pharm: "5555" };
-    let currentRole = null;
-
-    function doLogin() {
-      const dept = document.getElementById('login_dept').value;
-      const pass = document.getElementById('login_password').value.trim();
-
-      if (PASSWORDS[dept] === pass) {
-        currentRole = dept;
-        document.getElementById('authSection').style.display = 'none';
-        document.getElementById('mainAppSection').style.display = 'block';
-
-        const labels = {
-          reg: "Registration Reception",
-          doc: "Doctor Consultation",
-          path: "Pathology Lab",
-          rad: "Radiology Portal",
-          pharm: "Pharmacy Portal"
-        };
-
-        document.getElementById('currentDeptLabel').innerText = labels[dept];
-        switchTab(dept);
-      } else {
-        alert("Galat Password! Sahi PIN dalein (Registration: 1111)");
-      }
-    }
-
-    function doLogout() {
-      currentRole = null;
-      document.getElementById('login_password').value = "";
-      document.getElementById('mainAppSection').style.display = 'none';
-      document.getElementById('authSection').style.display = 'block';
-    }
-
-    function switchTab(tabId) {
-      const tabs = ['reg', 'doc', 'path', 'rad', 'pharm'];
-      tabs.forEach(t => {
-        const sec = document.getElementById('section_' + t);
-        const btn = document.getElementById('btn_' + t);
-        if (sec) sec.style.display = (t === tabId) ? 'block' : 'none';
-        if (btn) btn.classList.toggle('active', t === tabId);
-      });
-    }
-  </script>
 </head>
 <body>
 
@@ -125,6 +77,8 @@
     <h1>NBS Poly Clinic</h1>
     <p>Department Portal & Prescription Management</p>
   </div>
+
+  <div id="dbNotice"></div>
 
   <!-- AUTH SECTION -->
   <div id="authSection" class="card" style="max-width: 400px; margin: 20px auto;">
@@ -199,7 +153,6 @@
         </div>
 
         <button class="btn" type="button" id="regBtn" onclick="registerPatient()">Register Patient</button>
-        <div id="regStatus" class="status-msg"></div>
       </div>
     </div>
 
@@ -338,10 +291,54 @@
   </div>
 
   <script>
+    const PASSWORDS = { reg: "1111", doc: "2222", path: "3333", rad: "4444", pharm: "5555" };
+    let currentRole = null;
+
+    function doLogin() {
+      const dept = document.getElementById('login_dept').value;
+      const pass = document.getElementById('login_password').value.trim();
+
+      if (PASSWORDS[dept] === pass) {
+        currentRole = dept;
+        document.getElementById('authSection').style.display = 'none';
+        document.getElementById('mainAppSection').style.display = 'block';
+
+        const labels = {
+          reg: "Registration Reception",
+          doc: "Doctor Consultation",
+          path: "Pathology Lab",
+          rad: "Radiology Portal",
+          pharm: "Pharmacy Portal"
+        };
+
+        document.getElementById('currentDeptLabel').innerText = labels[dept];
+        switchTab(dept);
+      } else {
+        alert("Galat Password! Sahi PIN dalein (Registration: 1111)");
+      }
+    }
+
+    function doLogout() {
+      currentRole = null;
+      document.getElementById('login_password').value = "";
+      document.getElementById('mainAppSection').style.display = 'none';
+      document.getElementById('authSection').style.display = 'block';
+    }
+
+    function switchTab(tabId) {
+      const tabs = ['reg', 'doc', 'path', 'rad', 'pharm'];
+      tabs.forEach(t => {
+        const sec = document.getElementById('section_' + t);
+        const btn = document.getElementById('btn_' + t);
+        if (sec) sec.style.display = (t === tabId) ? 'block' : 'none';
+        if (btn) btn.classList.toggle('active', t === tabId);
+      });
+    }
+
+    // FIREBASE SETUP
     let db = null;
     let cachedPatients = [];
 
-    // FIREBASE INITIALIZATION
     try {
       const firebaseConfig = {
         apiKey: "AIzaSyBeSB_UJsWo1hYav9VCk3Srk67p4",
@@ -427,4 +424,8 @@
           pharmHtml += `
             <div class="patient-card">
               <div class="patient-header">
-           
+                <div>
+                  <span class="patient-name">${p.name}</span> (${p.gender}, ${p.age} yrs)
+                  <div class="patient-meta">Mob: ${p.mobile}</div>
+                </div>
+            
