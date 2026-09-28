@@ -97,7 +97,7 @@
       <input type="password" id="login_password" placeholder="Enter PIN">
     </div>
 
-    <button type="button" class="btn" id="loginSubmitBtn">Login Karein</button>
+    <button type="button" class="btn" onclick="doLogin()">Login Karein</button>
     <div id="loginError"></div>
   </div>
 
@@ -106,7 +106,7 @@
 
     <div class="user-banner">
       <span>Logged In: <strong id="currentDeptLabel" style="color:#0284c7;">-</strong></span>
-      <button class="btn-logout" type="button" id="logoutBtn">Logout</button>
+      <button class="btn-logout" type="button" onclick="doLogout()">Logout</button>
     </div>
 
     <div class="nav-bar">
@@ -141,7 +141,7 @@
           </div>
         </div>
 
-        <label style="margin-top:10px;">Patient Vitals (Optional / At Entry):</label>
+        <label style="margin-top:10px;">Patient Vitals (At Entry):</label>
         <div class="grid-vitals">
           <div><label>BP (mmHg):</label><input type="text" id="reg_bp" placeholder="120/80"></div>
           <div><label>Sugar (mg/dL):</label><input type="text" id="reg_sugar" placeholder="110"></div>
@@ -289,10 +289,12 @@
   </div>
 
   <script>
+    // GLOBAL PASSWORDS
     const PASSWORDS = { reg: "1111", doc: "2222", path: "3333", rad: "4444", pharm: "5555" };
     let currentRole = null;
 
-    document.getElementById('loginSubmitBtn').onclick = function() {
+    // DIRECT LOGIN FUNCTION
+    function doLogin() {
       const dept = document.getElementById('login_dept').value;
       const pass = document.getElementById('login_password').value.trim();
       const errEl = document.getElementById('loginError');
@@ -314,17 +316,18 @@
         document.getElementById('currentDeptLabel').innerText = labels[dept];
         switchTab(dept);
       } else {
-        errEl.innerText = "Galat Password! Kripya sahi PIN dalein.";
+        errEl.innerText = "Galat Password! Sahi PIN dalein (Jaise: 1111)";
       }
-    };
+    }
 
-    document.getElementById('logoutBtn').onclick = function() {
+    // DIRECT LOGOUT FUNCTION
+    function doLogout() {
       currentRole = null;
       document.getElementById('login_password').value = "";
       document.getElementById('loginError').innerText = "";
       document.getElementById('mainAppSection').style.display = 'none';
       document.getElementById('authSection').style.display = 'block';
-    };
+    }
 
     function switchTab(tabId) {
       const tabs = ['reg', 'doc', 'path', 'rad', 'pharm'];
@@ -334,96 +337,96 @@
       });
     }
 
-    // FIREBASE SETUP
-    const firebaseConfig = {
-      apiKey: "AIzaSyBeSB_UJsWo1hYav9VCk3Srk67p4",
-      authDomain: "nbs-poly-clinic.firebaseapp.com",
-      projectId: "nbs-poly-clinic",
-      storageBucket: "nbs-poly-clinic.appspot.com",
-      messagingSenderId: "836155988202",
-      appId: "1:836155988202:web:0419cb6ee23fb1",
-      measurementId: "G-6FKEMC96WB"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    // FIREBASE INITIALIZATION
+    let db = null;
     let cachedPatients = [];
 
-    // REALTIME DATABASE LISTENER
-    db.collection("patients").onSnapshot((snapshot) => {
-      cachedPatients = [];
-      const docSelect = document.getElementById('doc_patient_select');
-      const selectedVal = docSelect.value;
-      docSelect.innerHTML = '<option value="">-- Select Patient --</option>';
+    try {
+      const firebaseConfig = {
+        apiKey: "AIzaSyBeSB_UJsWo1hYav9VCk3Srk67p4",
+        authDomain: "nbs-poly-clinic.firebaseapp.com",
+        projectId: "nbs-poly-clinic",
+        storageBucket: "nbs-poly-clinic.appspot.com",
+        messagingSenderId: "836155988202",
+        appId: "1:836155988202:web:0419cb6ee23fb1",
+        measurementId: "G-6FKEMC96WB"
+      };
 
-      let pathHtml = '';
-      let radHtml = '';
-      let pharmHtml = '';
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
 
-      if (snapshot.empty) {
-        document.getElementById('pathology_records_list').innerHTML = '<p style="color:#64748b;">Abhi tak koi patient register nahi hua hai.</p>';
-        document.getElementById('radiology_records_list').innerHTML = '<p style="color:#64748b;">Abhi tak koi patient register nahi hua hai.</p>';
-        document.getElementById('pharmacy_records_list').innerHTML = '<p style="color:#64748b;">Abhi tak koi patient register nahi hua hai.</p>';
-        return;
-      }
+      // REALTIME LISTENER
+      db.collection("patients").onSnapshot((snapshot) => {
+        cachedPatients = [];
+        const docSelect = document.getElementById('doc_patient_select');
+        const selectedVal = docSelect.value;
+        docSelect.innerHTML = '<option value="">-- Select Patient --</option>';
 
-      snapshot.forEach((doc) => {
-        const p = doc.data();
-        cachedPatients.push(p);
+        let pathHtml = '';
+        let radHtml = '';
+        let pharmHtml = '';
 
-        docSelect.innerHTML += `<option value="${p.mobile}">${p.name} (${p.mobile})</option>`;
+        if (snapshot.empty) {
+          document.getElementById('pathology_records_list').innerHTML = '<p style="color:#64748b;">Abhi tak koi patient register nahi hua hai.</p>';
+          document.getElementById('radiology_records_list').innerHTML = '<p style="color:#64748b;">Abhi tak koi patient register nahi hua hai.</p>';
+          document.getElementById('pharmacy_records_list').innerHTML = '<p style="color:#64748b;">Abhi tak koi patient register nahi hua hai.</p>';
+          return;
+        }
 
-        // Pathology Card
-        const pathTestsText = p.pathologyTests ? p.pathologyTests : '<span style="color:#94a3b8; font-style:italic;">No Test Prescribed</span>';
-        pathHtml += `
-          <div class="patient-card">
-            <div class="patient-header">
-              <div>
-                <span class="patient-name">${p.name}</span> (${p.gender}, ${p.age} yrs)
-                <div class="patient-meta">Mob: ${p.mobile} | BP: ${p.bp || '-'} | Sugar: ${p.sugar || '-'}</div>
+        snapshot.forEach((doc) => {
+          const p = doc.data();
+          cachedPatients.push(p);
+
+          docSelect.innerHTML += `<option value="${p.mobile}">${p.name} (${p.mobile})</option>`;
+
+          // Pathology Card
+          const pathTestsText = p.pathologyTests ? p.pathologyTests : '<span style="color:#94a3b8; font-style:italic;">No Test Prescribed</span>';
+          pathHtml += `
+            <div class="patient-card">
+              <div class="patient-header">
+                <div>
+                  <span class="patient-name">${p.name}</span> (${p.gender}, ${p.age} yrs)
+                  <div class="patient-meta">Mob: ${p.mobile} | BP: ${p.bp || '-'} | Sugar: ${p.sugar || '-'}</div>
+                </div>
+                <span class="badge ${p.pathologyStatus === 'Completed' ? 'badge-done' : 'badge-pending'}">${p.pathologyStatus || 'Pending'}</span>
               </div>
-              <span class="badge ${p.pathologyStatus === 'Completed' ? 'badge-done' : 'badge-pending'}">${p.pathologyStatus || 'Pending'}</span>
-            </div>
-            <div class="readonly-box">
-              <p><strong>Recommended Test:</strong> <span style="color:#d97706; font-weight:bold;">${pathTestsText}</span></p>
-              ${p.pathologyReport ? `<p style="color:#059669;"><strong>Uploaded Lab Report:</strong> ${p.pathologyReport}</p>` : ''}
-            </div>
-            <div class="action-box">
-              <input type="text" id="path_res_${p.mobile}" placeholder="e.g. Hemoglobin 12.5, TLC Normal" style="margin-bottom:6px;">
-              <button class="btn btn-amber" type="button" onclick="savePathReport('${p.mobile}')">Upload Lab Report</button>
-            </div>
-          </div>`;
-
-        // Radiology Card
-        const radTestsText = p.radiologyTests ? p.radiologyTests : '<span style="color:#94a3b8; font-style:italic;">No X-Ray Prescribed</span>';
-        radHtml += `
-          <div class="patient-card">
-            <div class="patient-header">
-              <div>
-                <span class="patient-name">${p.name}</span> (${p.gender}, ${p.age} yrs)
-                <div class="patient-meta">Mob: ${p.mobile}</div>
+              <div class="readonly-box">
+                <p><strong>Recommended Test:</strong> <span style="color:#d97706; font-weight:bold;">${pathTestsText}</span></p>
+                ${p.pathologyReport ? `<p style="color:#059669;"><strong>Uploaded Lab Report:</strong> ${p.pathologyReport}</p>` : ''}
               </div>
-              <span class="badge ${p.radiologyStatus === 'Completed' ? 'badge-done' : 'badge-pending'}">${p.radiologyStatus || 'Pending'}</span>
-            </div>
-            <div class="readonly-box">
-              <p><strong>Advised X-Ray / Scan:</strong> <span style="color:#8b5cf6; font-weight:bold;">${radTestsText}</span></p>
-              ${p.radiologyReport ? `<p style="color:#059669;"><strong>Radiology Report:</strong> ${p.radiologyReport}</p>` : ''}
-            </div>
-            <div class="action-box">
-              <input type="text" id="rad_res_${p.mobile}" placeholder="Scan report impression..." style="margin-bottom:6px;">
-              <button class="btn btn-purple" type="button" onclick="saveRadReport('${p.mobile}')">Submit Scan Report</button>
-            </div>
-          </div>`;
-
-        // Pharmacy Card
-        const medsText = p.medicines ? p.medicines : '<span style="color:#94a3b8; font-style:italic;">No Medicines Prescribed</span>';
-        pharmHtml += `
-          <div class="patient-card">
-            <div class="patient-header">
-              <div>
-                <span class="patient-name">${p.name}</span> (${p.gender}, ${p.age} yrs)
-                <div class="patient-meta">Mob: ${p.mobile}</div>
+              <div class="action-box">
+                <input type="text" id="path_res_${p.mobile}" placeholder="e.g. Hemoglobin 12.5, TLC Normal" style="margin-bottom:6px;">
+                <button class="btn btn-amber" type="button" onclick="savePathReport('${p.mobile}')">Upload Lab Report</button>
               </div>
-              <span class="badge ${p.pharmacyStatus === 'Dispensed' ? 'badge-done' : 'badge-pending'}">${p.pharmacyStatus || 'Pending'}</span>
-            </div>
-            <d
+            </div>`;
+
+          // Radiology Card
+          const radTestsText = p.radiologyTests ? p.radiologyTests : '<span style="color:#94a3b8; font-style:italic;">No X-Ray Prescribed</span>';
+          radHtml += `
+            <div class="patient-card">
+              <div class="patient-header">
+                <div>
+                  <span class="patient-name">${p.name}</span> (${p.gender}, ${p.age} yrs)
+                  <div class="patient-meta">Mob: ${p.mobile}</div>
+                </div>
+                <span class="badge ${p.radiologyStatus === 'Completed' ? 'badge-done' : 'badge-pending'}">${p.radiologyStatus || 'Pending'}</span>
+              </div>
+              <div class="readonly-box">
+                <p><strong>Advised X-Ray / Scan:</strong> <span style="color:#8b5cf6; font-weight:bold;">${radTestsText}</span></p>
+                ${p.radiologyReport ? `<p style="color:#059669;"><strong>Radiology Report:</strong> ${p.radiologyReport}</p>` : ''}
+              </div>
+              <div class="action-box">
+                <input type="text" id="rad_res_${p.mobile}" placeholder="Scan report impression..." style="margin-bottom:6px;">
+                <button class="btn btn-purple" type="button" onclick="saveRadReport('${p.mobile}')">Submit Scan Report</button>
+              </div>
+            </div>`;
+
+          // Pharmacy Card
+          const medsText = p.medicines ? p.medicines : '<span style="color:#94a3b8; font-style:italic;">No Medicines Prescribed</span>';
+          pharmHtml += `
+            <div class="patient-card">
+              <div class="patient-header">
+                <div>
+                  <span class="patient-name">${p.name}</span> (${p.gender}, ${p.age} yrs)
+                  <div class="patient-meta">Mob: ${p.mobile}</div>
+                <
