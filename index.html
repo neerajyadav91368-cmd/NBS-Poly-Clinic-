@@ -4,6 +4,72 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NBS Poly Clinic Management</title>
+
+  <script>
+    // GLOBAL APP STATE & DIRECT SCRIPT
+    var currentRole = '';
+
+    window.executeLogin = function() {
+      var deptEl = document.getElementById('user_dept');
+      var pinEl = document.getElementById('user_pin');
+
+      if (!deptEl || !pinEl) {
+        alert("System error: Fields nahi mile!");
+        return;
+      }
+
+      var correctPin = deptEl.value;
+      var inputPin = pinEl.value.trim();
+
+      if (!inputPin) {
+        alert("Kripya apna PIN dalein!");
+        return;
+      }
+
+      if (inputPin === correctPin) {
+        currentRole = inputPin;
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('portalScreen').style.display = 'block';
+
+        var roleNames = {
+          '1111': 'Registration Reception',
+          '2222': 'Doctor Consultation',
+          '3333': 'Pathology Lab',
+          '4444': 'Radiology Portal',
+          '5555': 'Pharmacy Portal'
+        };
+        document.getElementById('activeRoleText').innerText = roleNames[currentRole];
+
+        var tabMap = { '1111': 'reg', '2222': 'doc', '3333': 'path', '4444': 'rad', '5555': 'pharm' };
+        showPortalTab(tabMap[currentRole]);
+        renderAllData();
+      } else {
+        alert("Galat PIN! Kripya is department ka sahi PIN dalein.");
+      }
+    };
+
+    window.executeLogout = function() {
+      currentRole = '';
+      document.getElementById('user_pin').value = '';
+      document.getElementById('portalScreen').style.display = 'none';
+      document.getElementById('loginScreen').style.display = 'block';
+    };
+
+    window.showPortalTab = function(tab) {
+      var tabs = ['reg', 'doc', 'path', 'rad', 'pharm'];
+      for (var i = 0; i < tabs.length; i++) {
+        var t = tabs[i];
+        var el = document.getElementById('tab_' + t);
+        var btn = document.getElementById('nb_' + t);
+        if (el) el.style.display = (t === tab) ? 'block' : 'none';
+        if (btn) {
+          if (t === tab) btn.classList.add('active');
+          else btn.classList.remove('active');
+        }
+      }
+    };
+  </script>
+
   <style>
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
     body { background-color: #f1f5f9; margin: 0; padding: 12px; color: #1e293b; }
@@ -47,7 +113,7 @@
     <h1>NBS Poly Clinic Portal</h1>
   </div>
 
-  <!-- 1. SECURE LOGIN SCREEN -->
+  <!-- 1. SECURE LOGIN SCREEN (NO PINs VISIBLE IN DROPDOWN) -->
   <div id="loginScreen" class="card" style="max-width: 380px; margin: 20px auto;">
     <h3 style="text-align:center; margin-top:0;">Staff Secure Login</h3>
     
@@ -243,65 +309,16 @@
   </div>
 
   <script>
-    var currentRole = '';
-
-    // DIRECT & GUARANTEED LOGIN
-    function executeLogin() {
-      var correctPin = document.getElementById('user_dept').value;
-      var inputPin = document.getElementById('user_pin').value.trim();
-
-      if (inputPin === correctPin) {
-        currentRole = inputPin;
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('portalScreen').style.display = 'block';
-
-        var roleNames = {
-          '1111': 'Registration Reception',
-          '2222': 'Doctor Consultation',
-          '3333': 'Pathology Lab',
-          '4444': 'Radiology Portal',
-          '5555': 'Pharmacy Portal'
-        };
-        document.getElementById('activeRoleText').innerText = roleNames[currentRole];
-
-        var tabMap = { '1111': 'reg', '2222': 'doc', '3333': 'path', '4444': 'rad', '5555': 'pharm' };
-        showPortalTab(tabMap[currentRole]);
-        renderAllData();
-      } else {
-        alert("Galat Password / PIN! Kripya sahi PIN dalein.");
-      }
-    }
-
-    function executeLogout() {
-      currentRole = '';
-      document.getElementById('user_pin').value = '';
-      document.getElementById('portalScreen').style.display = 'none';
-      document.getElementById('loginScreen').style.display = 'block';
-    }
-
-    function showPortalTab(tab) {
-      var tabs = ['reg', 'doc', 'path', 'rad', 'pharm'];
-      for (var i = 0; i < tabs.length; i++) {
-        var t = tabs[i];
-        document.getElementById('tab_' + t).style.display = (t === tab) ? 'block' : 'none';
-        var btn = document.getElementById('nb_' + t);
-        if (btn) {
-          if (t === tab) btn.classList.add('active');
-          else btn.classList.remove('active');
-        }
-      }
-    }
-
     function getStoredData() {
       try {
-        var d = localStorage.getItem('nbs_live_store_v10');
+        var d = localStorage.getItem('nbs_clean_local_store');
         return d ? JSON.parse(d) : [];
       } catch(e) { return []; }
     }
 
     function setStoredData(arr) {
       try {
-        localStorage.setItem('nbs_live_store_v10', JSON.stringify(arr));
+        localStorage.setItem('nbs_clean_local_store', JSON.stringify(arr));
       } catch(e) {}
     }
 
@@ -448,18 +465,4 @@
       alert("Doctor Advice successfully save ho gayi!");
     }
 
-    function printOPDParcha() {
-      var mob = document.getElementById('doc_p_select').value;
-      if (!mob) {
-        alert("Pehle kisi patient ko select kijiye!");
-        return;
-      }
-
-      var list = getStoredData();
-      var p = null;
-      for (var i = 0; i < list.length; i++) {
-        if (list[i].mobile === mob) { p = list[i]; break; }
-      }
-
-      if (!p) {
-        alert("Patient da
+    function printOPDP
