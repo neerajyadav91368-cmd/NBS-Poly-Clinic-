@@ -1,537 +1,209 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="hi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NBS Poly Clinic Management</title>
-  <style>
-    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
-    body { background-color: #f1f5f9; margin: 0; padding: 10px; color: #1e293b; }
-    .header { text-align: center; margin-bottom: 10px; }
-    .header h1 { color: #0284c7; margin: 0; font-size: 20px; }
-    .card { background: white; padding: 14px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 10px; }
-    .form-group { margin-bottom: 8px; }
-    label { display: block; font-weight: bold; font-size: 13px; margin-bottom: 3px; }
-    input, select { width: 100%; padding: 9px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; }
-    .btn { background: #0284c7; color: white; padding: 11px; border: none; border-radius: 6px; font-weight: bold; width: 100%; font-size: 14px; cursor: pointer; margin-top: 6px; }
-    .btn:active { opacity: 0.85; }
-    .nav-bar { display: flex; gap: 4px; overflow-x: auto; margin-bottom: 10px; }
-    .nav-btn { flex: 1; min-width: 75px; padding: 8px 3px; border: none; background: #e2e8f0; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; }
-    .nav-btn.active { background: #0284c7; color: white; }
-    .grid-v { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 6px; margin-bottom: 8px; }
-    .patient-box { border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px; margin-bottom: 8px; background: #fff; }
-    #msgAlert, #docMsgAlert { display: none; padding: 10px; border-radius: 6px; margin-top: 8px; font-weight: bold; text-align: center; font-size: 13px; background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NBS Poly Clinic</title>
+<style>
+*{box-sizing:border-box;font-family:sans-serif;}body{background:#f1f5f9;margin:0;padding:10px;color:#1e293b;}
+.card{background:#fff;padding:12px;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.1);margin-bottom:10px;}
+.form-group{margin-bottom:8px;}label{display:block;font-weight:bold;font-size:12px;margin-bottom:3px;}
+input,select{width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:14px;outline:none;}
+.btn{background:#0284c7;color:#fff;padding:10px;border:none;border-radius:6px;font-weight:bold;width:100%;font-size:14px;cursor:pointer;margin-top:5px;}
+.nav-bar{display:flex;gap:4px;overflow-x:auto;margin-bottom:10px;}.nav-btn{flex:1;min-width:70px;padding:8px 2px;border:none;background:#e2e8f0;border-radius:4px;font-size:11px;font-weight:bold;cursor:pointer;}
+.nav-btn.active{background:#0284c7;color:#fff;}
+.grid-v{display:grid;grid-template-columns:repeat(auto-fit,minmax(70px,1fr));gap:4px;margin-bottom:6px;}
+.patient-box{border:1px solid #cbd5e1;border-radius:6px;padding:8px;margin-bottom:8px;background:#fff;}
+#msgAlert,#docMsgAlert{display:none;padding:8px;border-radius:6px;margin-top:6px;font-weight:bold;text-align:center;font-size:12px;background:#dcfce7;color:#15803d;border:1px solid #86efac;}
+#parchaArea{display:none;background:#fff;padding:15px;color:#000;font-size:12px;}
+.pr-head{text-align:center;border-bottom:2px solid #000;padding-bottom:5px;margin-bottom:10px;}
+.pr-vitals{width:100%;border-collapse:collapse;margin:10px 0;}.pr-vitals th,.pr-vitals td{border:1px solid #000;padding:4px;text-align:center;}
+@media print{body *{visibility:hidden;}#parchaArea,#parchaArea *{visibility:visible;}#parchaArea{display:block!important;position:absolute;left:0;top:0;width:100%;margin:0;padding:10px;}}
+</style>
+<script>
+var currentRole='';
+function getStoredData(){try{var d=localStorage.getItem('nbs_clean_local_store');return d?JSON.parse(d):[];}catch(e){return [];}}
+function setStoredData(arr){try{localStorage.setItem('nbs_clean_local_store',JSON.stringify(arr));}catch(e){}}
 
-    #parchaArea { display: none; background: white; padding: 20px; color: #000; }
-    .pr-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 12px; }
-    .pr-header h2 { margin: 0; font-size: 22px; text-transform: uppercase; color: #000; }
-    .pr-header p { margin: 2px 0; font-size: 12px; }
-    .pr-info { display: flex; justify-content: space-between; border-bottom: 1px dashed #444; padding-bottom: 8px; margin-bottom: 10px; font-size: 13px; line-height: 1.5; }
-    .pr-vitals { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 12px; }
-    .pr-vitals th, .pr-vitals td { border: 1px solid #000; padding: 5px; text-align: center; }
-    .pr-section { margin-bottom: 12px; font-size: 13px; }
-    .pr-section h4 { margin: 0 0 3px 0; border-bottom: 1px solid #999; padding-bottom: 2px; font-size: 13px; }
-    .pr-footer { margin-top: 40px; display: flex; justify-content: space-between; font-size: 12px; }
+window.executeLogin=function(){
+  var correctPin=document.getElementById('user_dept').value;
+  var inputPin=document.getElementById('user_pin').value.trim();
+  if(inputPin===correctPin){
+    currentRole=inputPin;
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('portalScreen').style.display='block';
+    var rMap={'1111':'Registration Reception','2222':'Doctor Consultation','3333':'Pathology Lab','4444':'Radiology Portal','5555':'Pharmacy Portal'};
+    document.getElementById('activeRoleText').innerText=rMap[currentRole];
+    var tMap={'1111':'reg','2222':'doc','3333':'path','4444':'rad','5555':'pharm'};
+    showPortalTab(tMap[currentRole]);
+    renderAllData();
+  }else{alert("Galat PIN!");}
+};
 
-    @media print {
-      body { background: white !important; padding: 0 !important; margin: 0 !important; }
-      #loginScreen, #portalScreen, .header { display: none !important; }
-      #parchaArea { display: block !important; width: 100% !important; margin: 0 !important; padding: 15px !important; }
-    }
-  </style>
+window.executeLogout=function(){currentRole='';document.getElementById('user_pin').value='';document.getElementById('portalScreen').style.display='none';document.getElementById('loginScreen').style.display='block';};
 
-  <script>
-    var currentRole = '';
+window.showPortalTab=function(t){
+  var tabs=['reg','doc','path','rad','pharm'];
+  for(var i=0;i<tabs.length;i++){
+    var el=document.getElementById('tab_'+tabs[i]);var btn=document.getElementById('nb_'+tabs[i]);
+    if(el)el.style.display=(tabs[i]===t)?'block':'none';
+    if(btn){if(tabs[i]===t)btn.classList.add('active');else btn.classList.remove('active');}
+  }
+};
 
-    function getStoredData() {
-      try {
-        var d = localStorage.getItem('nbs_clean_local_store');
-        return d ? JSON.parse(d) : [];
-      } catch(e) { return []; }
-    }
+window.savePatientDirect=function(){
+  var mob=document.getElementById('p_mob').value.trim();var nm=document.getElementById('p_name').value.trim();var ag=document.getElementById('p_age').value.trim();
+  if(!mob||!nm||!ag){alert("Mobile, Name aur Age bharein!");return;}
+  var pt={mobile:mob,name:nm,age:ag,gender:document.getElementById('p_gender').value,bp:document.getElementById('p_bp').value||"-",sugar:document.getElementById('p_sugar').value||"-",spo2:document.getElementById('p_spo2').value||"-",pulse:document.getElementById('p_pulse').value||"-",weight:document.getElementById('p_weight').value||"-",diagnosis:"",pathTests:"",pathReport:"",radTests:"",radReport:"",medicines:"",dispensed:false};
+  var list=getStoredData();var ex=false;
+  for(var i=0;i<list.length;i++){if(list[i].mobile===mob){list[i]=pt;ex=true;break;}}
+  if(!ex)list.push(pt);
+  setStoredData(list);
+  document.getElementById('p_mob').value='';document.getElementById('p_name').value='';document.getElementById('p_age').value='';
+  var a=document.getElementById('msgAlert');a.style.display='block';a.innerText='✅ Patient Register Ho Gaya!';setTimeout(function(){a.style.display='none';},2500);
+  renderAllData();
+};
 
-    function setStoredData(arr) {
-      try {
-        localStorage.setItem('nbs_clean_local_store', JSON.stringify(arr));
-      } catch(e) {}
-    }
+window.renderAllData=function(){
+  var list=getStoredData();var dSel=document.getElementById('doc_p_select');if(!dSel)return;
+  var cVal=dSel.value;dSel.innerHTML='<option value="">-- Select Patient --</option>';
+  var pHtml='',rHtml='',mHtml='';
+  for(var i=0;i<list.length;i++){
+    var p=list[i];dSel.innerHTML+='<option value="'+p.mobile+'">'+p.name+' ('+p.mobile+')</option>';
+    pHtml+='<div class="patient-box"><strong>'+p.name+'</strong> ('+p.mobile+')<br><span style="color:#d97706;">Tests: '+(p.pathTests||'None')+'</span><br>'+(p.pathReport?'Report: '+p.pathReport+'<br>':'')+'<input type="text" id="pr_'+p.mobile+'" placeholder="Result..." style="margin:4px 0;"><button class="btn" style="padding:4px;background:#d97706;" onclick="savePathRes(\''+p.mobile+'\')">Save Lab Report</button></div>';
+    rHtml+='<div class="patient-box"><strong>'+p.name+'</strong> ('+p.mobile+')<br><span style="color:#8b5cf6;">Scan: '+(p.radTests||'None')+'</span><br>'+(p.radReport?'Impression: '+p.radReport+'<br>':'')+'<input type="text" id="rr_'+p.mobile+'" placeholder="Scan result..." style="margin:4px 0;"><button class="btn" style="padding:4px;background:#8b5cf6;" onclick="saveRadRes(\''+p.mobile+'\')">Save Scan Report</button></div>';
+    mHtml+='<div class="patient-box"><strong>'+p.name+'</strong> ('+p.mobile+')<br><span style="color:#0284c7;">Rx: '+(p.medicines||'None')+'</span><br>Status: '+(p.dispensed?'Dispensed':'Pending')+'<button class="btn" style="padding:4px;background:#10b981;margin-top:4px;" onclick="markDispensed(\''+p.mobile+'\')">Mark Dispensed</button></div>';
+  }
+  if(cVal)dSel.value=cVal;
+  document.getElementById('pathList').innerHTML=pHtml||'Koi patient nahi hai.';
+  document.getElementById('radList').innerHTML=rHtml||'Koi patient nahi hai.';
+  document.getElementById('pharmList').innerHTML=mHtml||'Koi patient nahi hai.';
+};
 
-    window.executeLogin = function() {
-      var deptEl = document.getElementById('user_dept');
-      var pinEl = document.getElementById('user_pin');
-      if (!deptEl || !pinEl) return;
+window.loadDocDetails=function(){
+  var m=document.getElementById('doc_p_select').value;var list=getStoredData();
+  for(var i=0;i<list.length;i++){if(list[i].mobile===m){document.getElementById('doc_diag').value=list[i].diagnosis||"";document.getElementById('doc_path_t').value=list[i].pathTests||"";document.getElementById('doc_rad_t').value=list[i].radTests||"";document.getElementById('doc_rx').value=list[i].medicines||"";break;}}
+};
 
-      var correctPin = deptEl.value;
-      var inputPin = pinEl.value.trim();
+window.saveDocRx=function(){
+  var m=document.getElementById('doc_p_select').value;if(!m){alert("Patient chunein!");return;}
+  var list=getStoredData();
+  for(var i=0;i<list.length;i++){if(list[i].mobile===m){list[i].diagnosis=document.getElementById('doc_diag').value;list[i].pathTests=document.getElementById('doc_path_t').value;list[i].radTests=document.getElementById('doc_rad_t').value;list[i].medicines=document.getElementById('doc_rx').value;break;}}
+  setStoredData(list);renderAllData();
+  var a=document.getElementById('docMsgAlert');a.style.display='block';a.innerText='✅ Doctor Advice Saved!';setTimeout(function(){a.style.display='none';},2500);
+  alert("Doctor Advice successfully save ho gayi!");
+};
 
-      if (inputPin === correctPin) {
-        currentRole = inputPin;
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('portalScreen').style.display = 'block';
+window.printOPDParcha=function(){
+  var m=document.getElementById('doc_p_select').value;if(!m){alert("Patient chunein!");return;}
+  var list=getStoredData(),p=null;
+  for(var i=0;i<list.length;i++){if(list[i].mobile===m){p=list[i];break;}}
+  if(!p)return;
+  document.getElementById('pr_name').innerText=p.name;document.getElementById('pr_info').innerText=p.age+' Yrs / '+p.gender+' | Mob: '+p.mobile+' | Date: '+new Date().toLocaleDateString('en-IN');
+  document.getElementById('pr_bp').innerText=p.bp;document.getElementById('pr_sugar').innerText=p.sugar;document.getElementById('pr_spo2').innerText=p.spo2;document.getElementById('pr_pulse').innerText=p.pulse;document.getElementById('pr_weight').innerText=p.weight;
+  document.getElementById('pr_diag').innerText=document.getElementById('doc_diag').value||"None";
+  document.getElementById('pr_path').innerText=document.getElementById('doc_path_t').value||"None";
+  document.getElementById('pr_rad').innerText=document.getElementById('doc_rad_t').value||"None";
+  document.getElementById('pr_rx').innerText=document.getElementById('doc_rx').value||"None";
+  window.print();
+};
 
-        var roleNames = {
-          '1111': 'Registration Reception',
-          '2222': 'Doctor Consultation',
-          '3333': 'Pathology Lab',
-          '4444': 'Radiology Portal',
-          '5555': 'Pharmacy Portal'
-        };
-        document.getElementById('activeRoleText').innerText = roleNames[currentRole];
-
-        var tabMap = { '1111': 'reg', '2222': 'doc', '3333': 'path', '4444': 'rad', '5555': 'pharm' };
-        showPortalTab(tabMap[currentRole]);
-        renderAllData();
-      } else {
-        alert("Galat Password / PIN! Kripya sahi PIN enter karein.");
-      }
-    };
-
-    window.executeLogout = function() {
-      currentRole = '';
-      document.getElementById('user_pin').value = '';
-      document.getElementById('portalScreen').style.display = 'none';
-      document.getElementById('loginScreen').style.display = 'block';
-    };
-
-    window.showPortalTab = function(tab) {
-      var tabs = ['reg', 'doc', 'path', 'rad', 'pharm'];
-      for (var i = 0; i < tabs.length; i++) {
-        var t = tabs[i];
-        var el = document.getElementById('tab_' + t);
-        var btn = document.getElementById('nb_' + t);
-        if (el) el.style.display = (t === tab) ? 'block' : 'none';
-        if (btn) {
-          if (t === tab) btn.classList.add('active');
-          else btn.classList.remove('active');
-        }
-      }
-    };
-
-    window.savePatientDirect = function() {
-      var mob = document.getElementById('p_mob').value.trim();
-      var nm = document.getElementById('p_name').value.trim();
-      var ag = document.getElementById('p_age').value.trim();
-      var gen = document.getElementById('p_gender').value;
-
-      if (!mob || !nm || !ag) {
-        alert("Mobile number, Naam aur Umar bharna anivarya hai!");
-        return;
-      }
-
-      var newPatient = {
-        mobile: mob,
-        name: nm,
-        age: ag,
-        gender: gen,
-        bp: document.getElementById('p_bp').value.trim() || "-",
-        sugar: document.getElementById('p_sugar').value.trim() || "-",
-        spo2: document.getElementById('p_spo2').value.trim() || "-",
-        pulse: document.getElementById('p_pulse').value.trim() || "-",
-        weight: document.getElementById('p_weight').value.trim() || "-",
-        diagnosis: "",
-        pathTests: "",
-        pathReport: "",
-        radTests: "",
-        radReport: "",
-        medicines: "",
-        dispensed: false
-      };
-
-      var list = getStoredData();
-      var exists = false;
-      for (var i = 0; i < list.length; i++) {
-        if (list[i].mobile === mob) {
-          list[i] = newPatient;
-          exists = true;
-          break;
-        }
-      }
-      if (!exists) list.push(newPatient);
-      setStoredData(list);
-
-      document.getElementById('p_mob').value = '';
-      document.getElementById('p_name').value = '';
-      document.getElementById('p_age').value = '';
-      document.getElementById('p_bp').value = '';
-      document.getElementById('p_sugar').value = '';
-      document.getElementById('p_spo2').value = '';
-      document.getElementById('p_pulse').value = '';
-      document.getElementById('p_weight').value = '';
-
-      var alertBox = document.getElementById('msgAlert');
-      alertBox.style.display = 'block';
-      alertBox.innerText = '✅ Patient "' + nm + '" Successfully Register Ho Gaya!';
-      setTimeout(function() { alertBox.style.display = 'none'; }, 3000);
-
-      renderAllData();
-    };
-
-    window.renderAllData = function() {
-      var list = getStoredData();
-      var docSel = document.getElementById('doc_p_select');
-      if (!docSel) return;
-      var curVal = docSel.value;
-      docSel.innerHTML = '<option value="">-- Select Patient --</option>';
-
-      var pPathHtml = '';
-      var pRadHtml = '';
-      var pPharmHtml = '';
-
-      if (list.length === 0) {
-        document.getElementById('pathList').innerHTML = '<p style="color:#64748b;">Koi patient nahi mila.</p>';
-        document.getElementById('radList').innerHTML = '<p style="color:#64748b;">Koi patient nahi mila.</p>';
-        document.getElementById('pharmList').innerHTML = '<p style="color:#64748b;">Koi patient nahi mila.</p>';
-        return;
-      }
-
-      for (var i = 0; i < list.length; i++) {
-        var p = list[i];
-        docSel.innerHTML += '<option value="' + p.mobile + '">' + p.name + ' (' + p.mobile + ')</option>';
-
-        pPathHtml += '<div class="patient-box">' +
-          '<strong>' + p.name + '</strong> (' + p.gender + ', ' + p.age + ' Yrs) | Mob: ' + p.mobile + '<br>' +
-          '<span style="color:#d97706;">Advised Tests: ' + (p.pathTests || 'None') + '</span><br>' +
-          (p.pathReport ? '<span style="color:#059669;">Report: ' + p.pathReport + '</span><br>' : '') +
-          '<input type="text" id="pr_' + p.mobile + '" placeholder="Enter test result..." style="margin:5px 0;">' +
-          '<button class="btn" style="padding:6px; background:#d97706;" onclick="savePathRes(\'' + p.mobile + '\')">Upload Result</button>' +
-          '</div>';
-
-        pRadHtml += '<div class="patient-box">' +
-          '<strong>' + p.name + '</strong> (' + p.gender + ', ' + p.age + ' Yrs) | Mob: ' + p.mobile + '<br>' +
-          '<span style="color:#8b5cf6;">Advised Scan: ' + (p.radTests || 'None') + '</span><br>' +
-          (p.radReport ? '<span style="color:#059669;">Impression: ' + p.radReport + '</span><br>' : '') +
-          '<input type="text" id="rr_' + p.mobile + '" placeholder="Enter scan impression..." style="margin:5px 0;">' +
-          '<button class="btn" style="padding:6px; background:#8b5cf6;" onclick="saveRadRes(\'' + p.mobile + '\')">Submit Impression</button>' +
-          '</div>';
-
-        pPharmHtml += '<div class="patient-box">' +
-          '<strong>' + p.name + '</strong> (' + p.gender + ', ' + p.age + ' Yrs) | Mob: ' + p.mobile + '<br>' +
-          '<span style="color:#0284c7;">Medicines (Rx): ' + (p.medicines || 'None Prescribed') + '</span><br>' +
-          'Status: <strong>' + (p.dispensed ? '<span style="color:#15803d;">Dispensed</span>' : '<span style="color:#b45309;">Pending</span>') + '</strong><br>' +
-          '<button class="btn" style="padding:6px; background:#10b981; margin-top:5px;" onclick="markDispensed(\'' + p.mobile + '\')">Mark Dispensed</button>' +
-          '</div>';
-      }
-
-      if (curVal) docSel.value = curVal;
-      document.getElementById('pathList').innerHTML = pPathHtml;
-      document.getElementById('radList').innerHTML = pRadHtml;
-      document.getElementById('pharmList').innerHTML = pPharmHtml;
-    };
-
-    window.loadDocDetails = function() {
-      var mob = document.getElementById('doc_p_select').value;
-      var list = getStoredData();
-      for (var i = 0; i < list.length; i++) {
-        if (list[i].mobile === mob) {
-          document.getElementById('doc_diag').value = list[i].diagnosis || "";
-          document.getElementById('doc_path_t').value = list[i].pathTests || "";
-          document.getElementById('doc_rad_t').value = list[i].radTests || "";
-          document.getElementById('doc_rx').value = list[i].medicines || "";
-          break;
-        }
-      }
-    };
-
-    window.saveDocRx = function() {
-      var mob = document.getElementById('doc_p_select').value;
-      if (!mob) {
-        alert("Pehle patient select karein!");
-        return;
-      }
-
-      var list = getStoredData();
-      var found = false;
-      for (var i = 0; i < list.length; i++) {
-        if (list[i].mobile === mob) {
-          list[i].diagnosis = document.getElementById('doc_diag').value.trim();
-          list[i].pathTests = document.getElementById('doc_path_t').value.trim();
-          list[i].radTests = document.getElementById('doc_rad_t').value.trim();
-          list[i].medicines = document.getElementById('doc_rx').value.trim();
-          found = true;
-          break;
-        }
-      }
-
-      if (found) {
-        setStoredData(list);
-        renderAllData();
-        var alertBox = document.getElementById('docMsgAlert');
-        alertBox.style.display = 'block';
-        alertBox.innerText = '✅ Doctor Advice & Medicines Sabhi Departments ke liye Save Ho Gayi!';
-        setTimeout(function() { alertBox.style.display = 'none'; }, 3000);
-        alert("✅ Doctor Advice aur Medicines successfully save ho gayi!");
-      } else {
-        alert("Patient data nahi mila!");
-      }
-    };
-
-    window.printOPDParcha = function() {
-      var mob = document.getElementById('doc_p_select').value;
-      if (!mob) {
-        alert("Pehle kisi patient ko select kijiye!");
-        return;
-      }
-
-      var list = getStoredData();
-      var p = null;
-      for (var i = 0; i < list.length; i++) {
-        if (list[i].mobile === mob) { p = list[i]; break; }
-      }
-
-      if (!p) {
-        alert("Patient data nahi mila!");
-        return;
-      }
-
-      document.getElementById('pr_name').innerText = p.name;
-      document.getElementById('pr_age_gender').innerText = p.age + " Yrs / " + p.gender;
-      document.getElementById('pr_mob').innerText = p.mobile;
-      document.getElementById('pr_date').innerText = new Date().toLocaleDateString('en-IN');
-
-      document.getElementById('pr_bp').innerText = p.bp || "-";
-      document.getElementById('pr_sugar').innerText = p.sugar || "-";
-      document.getElementById('pr_spo2').innerText = p.spo2 || "-";
-      document.getElementById('pr_pulse').innerText = p.pulse || "-";
-      document.getElementById('pr_weight').innerText = p.weight || "-";
-
-      document.getElementById('pr_diag').innerText = document.getElementById('doc_diag').value || p.diagnosis || "None";
-      document.getElementById('pr_path').innerText = document.getElementById('doc_path_t').value || p.pathTests || "None";
-      document.getElementById('pr_rad').innerText = document.getElementById('doc_rad_t').value || p.radTests || "None";
-      document.getElementById('pr_rx').innerText = document.getElementById('doc_rx').value || p.medicines || "None";
-
-      window.print();
-    };
-
-    window.savePathRes = function(mob) {
-      var res = document.getElementById('pr_' + mob).value.trim();
-      if (!res) { alert("Result bharein!"); return; }
-      var list = getStoredData();
-      for (var i = 0; i < list.length; i++) {
-        if (list[i].mobile === mob) { list[i].pathReport = res; break; }
-      }
-      setStoredData(list);
-      renderAllData();
-      alert("Lab result save ho gaya!");
-    };
-
-    window.saveRadRes = function(mob) {
-      var res = document.getElementById('rr_' + mob).value.trim();
-      if (!res) { alert("Impression bharein!"); return; }
-      var list = getStoredData();
-      for (var i = 0; i < list.length; i++) {
-        if (list[i].mobile === mob) { list[i].radReport = res; break; }
-      }
-      setStoredData(list);
-      renderAllData();
-      alert("Scan report save ho gayi!");
-    };
-
-    window.markDispensed = function(mob) {
-      var list = getStoredData();
-      for (var i = 0; i < list.length; i++) {
-        if (list[i].mobile === mob) { list[i].dispensed = true; break; }
-      }
-      setStoredData(list);
-      renderAllData();
-      alert("Medicines marked as Dispensed!");
-    };
-  </script>
+window.savePathRes=function(m){var r=document.getElementById('pr_'+m).value;if(!r)return;var l=getStoredData();for(var i=0;i<l.length;i++){if(l[i].mobile===m){l[i].pathReport=r;break;}}setStoredData(l);renderAllData();alert("Report Saved!");};
+window.saveRadRes=function(m){var r=document.getElementById('rr_'+m).value;if(!r)return;var l=getStoredData();for(var i=0;i<l.length;i++){if(l[i].mobile===m){l[i].radReport=r;break;}}setStoredData(l);renderAllData();alert("Report Saved!");};
+window.markDispensed=function(m){var l=getStoredData();for(var i=0;i<l.length;i++){if(l[i].mobile===m){l[i].dispensed=true;break;}}setStoredData(l);renderAllData();alert("Dispensed Marked!");};
+</script>
 </head>
 <body>
 
-  <div class="header">
-    <h1>NBS Poly Clinic Portal</h1>
+<div style="text-align:center;margin-bottom:10px;"><h2 style="color:#0284c7;margin:0;">NBS Poly Clinic</h2></div>
+
+<div id="loginScreen" class="card" style="max-width:350px;margin:20px auto;">
+  <h3 style="text-align:center;margin:0 0 10px 0;">Staff Login</h3>
+  <div class="form-group"><label>Department:</label>
+    <select id="user_dept">
+      <option value="1111">1. Registration Reception</option>
+      <option value="2222">2. Doctor Consultation</option>
+      <option value="3333">3. Pathology Lab</option>
+      <option value="4444">4. Radiology / X-Ray</option>
+      <option value="5555">5. Pharmacy</option>
+    </select>
+  </div>
+  <div class="form-group"><label>PIN:</label><input type="password" id="user_pin" placeholder="Enter PIN"></div>
+  <button type="button" class="btn" onclick="executeLogin()">Login Karein</button>
+</div>
+
+<div id="portalScreen" style="display:none;">
+  <div style="display:flex;justify-content:space-between;align-items:center;background:#e0f2fe;padding:6px 10px;border-radius:6px;margin-bottom:8px;">
+    <span style="font-size:12px;font-weight:bold;color:#0369a1;" id="activeRoleText">-</span>
+    <button onclick="executeLogout()" style="background:#ef4444;color:#fff;border:none;padding:4px 8px;border-radius:4px;font-size:11px;">Logout</button>
+  </div>
+  <div class="nav-bar">
+    <button class="nav-btn" id="nb_reg" onclick="showPortalTab('reg')">1. Reg</button>
+    <button class="nav-btn" id="nb_doc" onclick="showPortalTab('doc')">2. Doctor</button>
+    <button class="nav-btn" id="nb_path" onclick="showPortalTab('path')">3. Pathology</button>
+    <button class="nav-btn" id="nb_rad" onclick="showPortalTab('rad')">4. Radiology</button>
+    <button class="nav-btn" id="nb_pharm" onclick="showPortalTab('pharm')">5. Pharmacy</button>
   </div>
 
-  <!-- LOGIN SCREEN -->
-  <div id="loginScreen" class="card" style="max-width: 380px; margin: 20px auto;">
-    <h3 style="text-align:center; margin-top:0;">Staff Secure Login</h3>
-    
-    <div class="form-group">
-      <label>Department:</label>
-      <select id="user_dept">
-        <option value="1111">1. Registration Reception</option>
-        <option value="2222">2. Doctor Consultation</option>
-        <option value="3333">3. Pathology Lab</option>
-        <option value="4444">4. Radiology / X-Ray</option>
-        <option value="5555">5. Pharmacy</option>
-      </select>
+  <div id="tab_reg" style="display:none;">
+    <div class="card">
+      <h4 style="margin:0 0 8px 0;">Patient Registration</h4>
+      <div class="form-group"><label>Mobile:</label><input type="tel" id="p_mob"></div>
+      <div class="form-group"><label>Name:</label><input type="text" id="p_name"></div>
+      <div class="form-group"><label>Age & Gender:</label>
+        <div style="display:flex;gap:6px;"><input type="number" id="p_age" placeholder="Age" style="width:50%;"><select id="p_gender" style="width:50%;"><option value="Male">Male</option><option value="Female">Female</option></select></div>
+      </div>
+      <div class="grid-v">
+        <div><label>BP:</label><input type="text" id="p_bp" placeholder="120/80"></div>
+        <div><label>Sugar:</label><input type="text" id="p_sugar" placeholder="110"></div>
+        <div><label>SpO2:</label><input type="text" id="p_spo2" placeholder="98"></div>
+        <div><label>Pulse:</label><input type="text" id="p_pulse" placeholder="72"></div>
+        <div><label>Weight:</label><input type="text" id="p_weight" placeholder="65"></div>
+      </div>
+      <button type="button" class="btn" onclick="savePatientDirect()">Register Patient</button>
+      <div id="msgAlert"></div>
     </div>
-
-    <div class="form-group">
-      <label>Secret Password / PIN:</label>
-      <input type="password" id="user_pin" placeholder="Enter PIN" onkeydown="if(event.key==='Enter') executeLogin()">
-    </div>
-
-    <button type="button" class="btn" onclick="executeLogin()">Login Karein</button>
   </div>
 
-  <!-- MAIN APP SCREEN -->
-  <div id="portalScreen" style="display: none;">
-    <div style="display:flex; justify-content:space-between; align-items:center; background:#e0f2fe; padding:8px 12px; border-radius:6px; margin-bottom:10px;">
-      <span style="font-size:13px; font-weight:bold; color:#0369a1;" id="activeRoleText">-</span>
-      <button onclick="executeLogout()" style="background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;">Logout</button>
-    </div>
-
-    <div class="nav-bar">
-      <button class="nav-btn" id="nb_reg" onclick="showPortalTab('reg')">1. Reg</button>
-      <button class="nav-btn" id="nb_doc" onclick="showPortalTab('doc')">2. Doctor</button>
-      <button class="nav-btn" id="nb_path" onclick="showPortalTab('path')">3. Pathology</button>
-      <button class="nav-btn" id="nb_rad" onclick="showPortalTab('rad')">4. Radiology</button>
-      <button class="nav-btn" id="nb_pharm" onclick="showPortalTab('pharm')">5. Pharmacy</button>
-    </div>
-
-    <!-- REGISTRATION -->
-    <div id="tab_reg" style="display: none;">
-      <div class="card">
-        <h3 style="margin-top:0;">Patient Registration</h3>
-        <div class="form-group">
-          <label>Mobile Number:</label>
-          <input type="tel" id="p_mob" placeholder="Mobile number...">
-        </div>
-        <div class="form-group">
-          <label>Patient Full Name:</label>
-          <input type="text" id="p_name" placeholder="Patient name...">
-        </div>
-        <div class="form-group">
-          <label>Age & Gender:</label>
-          <div style="display:flex; gap:8px;">
-            <input type="number" id="p_age" placeholder="Age" style="width:50%;">
-            <select id="p_gender" style="width:50%;">
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-        </div>
-
-        <label>Primary Vitals:</label>
-        <div class="grid-v">
-          <div><label style="font-size:11px;">BP:</label><input type="text" id="p_bp" placeholder="120/80"></div>
-          <div><label style="font-size:11px;">Sugar:</label><input type="text" id="p_sugar" placeholder="110"></div>
-          <div><label style="font-size:11px;">SpO2:</label><input type="text" id="p_spo2" placeholder="98"></div>
-          <div><label style="font-size:11px;">Pulse:</label><input type="text" id="p_pulse" placeholder="72"></div>
-          <div><label style="font-size:11px;">Weight:</label><input type="text" id="p_weight" placeholder="65"></div>
-        </div>
-
-        <button type="button" class="btn" onclick="savePatientDirect()">Register Patient</button>
-        <div id="msgAlert"></div>
-      </div>
-    </div>
-
-    <!-- DOCTOR -->
-    <div id="tab_doc" style="display: none;">
-      <div class="card">
-        <h3 style="margin-top:0;">Doctor Consultation</h3>
-        <div class="form-group">
-          <label>Select Patient:</label>
-          <select id="doc_p_select" onchange="loadDocDetails()">
-            <option value="">-- Select Patient --</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Symptoms / Diagnosis:</label>
-          <input type="text" id="doc_diag" placeholder="Fever, cough...">
-        </div>
-        <div class="form-group">
-          <label>Advise Pathology Tests:</label>
-          <input type="text" id="doc_path_t" placeholder="e.g. CBC, Lipid Profile">
-        </div>
-        <div class="form-group">
-          <label>Advise Radiology / Scan:</label>
-          <input type="text" id="doc_rad_t" placeholder="e.g. Chest X-Ray">
-        </div>
-        <div class="form-group">
-          <label>Prescribe Medicines (Rx):</label>
-          <input type="text" id="doc_rx" placeholder="Medicine Name - Dosage - Duration">
-        </div>
-      !-- PATHOLOGY -->
-    <div id="tab_path" style="display: none;">
-      <div class="card">
-        <h3 style="margin-top:0;">Pathology Lab Portal</h3>
-        <div id="pathList">No patients found.</div>
-      </div>
-    </div>
-
-    <!-- RADIOLOGY -->
-    <div id="tab_rad" style="display: none;">
-      <div class="card">
-        <h3 style="margin-top:0;">Radiology & Scan Portal</h3>
-        <div id="radList">No patients found.</div>
-      </div>
-    </div>
-
-    <!-- PHARMACY -->
-    <div id="tab_pharm" style="display: none;">
-      <div class="card">
-        <h3 style="margin-top:0;">Pharmacy Portal</h3>
-        <div id="pharmList">No patients found.</div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- PRINTABLE OPD PARCHA -->
-  <div id="parchaArea">
-    <div class="pr-header">
-      <h2>NBS Poly Clinic</h2>
-      <p>Sadhanganj Sewaith Road, Soraon, Prayagraj</p>
-      <p style="font-size:11px;">OPD Prescription & Diagnostic Receipt</p>
-    </div>
-
-    <div class="pr-info">
-      <div>
-        <strong>Name:</strong> <span id="pr_name">-</span><br>
-        <strong>Age / Sex:</strong> <span id="pr_age_gender">-</span>
-      </div>
-      <div style="text-align:right;">
-        <strong>Patient ID / Mob:</strong> <span id="pr_mob">-</span><br>
-        <strong>Date:</strong> <span id="pr_date">-</span>
-      </div>
-    </div>
-
-    <table class="pr-vitals">
-      <thead>
-        <tr style="background:#f1f5f9;">
-          <th>BP (mmHg)</th>
-          <th>Sugar (mg/dL)</th>
-          <th>SpO2 (%)</th>
-          <th>Pulse (PR)</th>
-          <th>Weight (Kg)</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td id="pr_bp">-</td>
-          <td id="pr_sugar">-</td>
-          <td id="pr_spo2">-</td>
-          <td id="pr_pulse">-</td>
-          <td id="pr_weight">-</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div class="pr-section">
-      <h4>Diagnosis / Symptoms:</h4>
-      <p id="pr_diag" style="margin:4px 0; min-height:18px;">None</p>
-    </div>
-
-    <div class="pr-section">
-      <h4>Advised Investigations (Lab / Scan):</h4>
-      <p style="margin:2px 0;"><strong>Pathology:</strong> <span id="pr_path">None</span></p>
-      <p style="margin:2px 0;"><strong>Radiology:</strong> <span id="pr_rad">None</span></p>
-    </div>
-
-    <div class="pr-section">
-      <h4>Rx (Medicines Advised):</h4>
-      <p id="pr_rx" style="font-weight:bold; white-space:pre-wrap; min-height:60px; margin:4px 0;">None</p>
-    </div>
-
-    <div class="pr-footer">
-      <div><em>*Kripya samay par dawa lein. Agli baar parcha sath layein.</em></div>
-      <div style="border-top:1px solid #000; width:150px; text-align:center; padding-top:4px;">Doctor Signature</div>
+  <div id="tab_doc" style="display:none;">
+    <div class="card">
+      <h4 style="margin:0 0 8px 0;">Doctor Consultation</h4>
+      <div class="form-group"><label>Select Patient:</label><select id="doc_p_select" onchange="loadDocDetails()"></select></div>
+      <div class="form-group"><label>Diagnosis:</label><input type="text" id="doc_diag" placeholder="Fever, cough..."></div>
+      <div class="form-group"><label>Advise Pathology:</label><input type="text" id="doc_path_t" placeholder="CBC, Sugar..."></div>
+      <div class="form-group"><label>Advise Radiology:</label><input type="text" id="doc_rad_t" placeholder="Chest X-Ray..."></div>
+      <div class="form-group"><label>Prescribe Medicines (Rx):</label><input type="text" id="doc_rx" placeholder="Medicines..."></div>
+      <button type="button" class="btn" onclick="saveDocRx()">Save Rx to All Departments</button>
+      <div id="docMsgAlert"></div>
+      <button type="button" class="btn" style="background:#475569;" onclick="printOPDParcha()">🖨️ Print Prescription / Parcha</button>
     </div>
   </div>
+
+  <div id="tab_path" style="display:none;"><div class="card"><h4 style="margin:0 0 8px 0;">Pathology Portal</h4><div id="pathList"></div></div></div>
+  <div id="tab_rad" style="display:none;"><div class="card"><h4 style="margin:0 0 8px 0;">Radiology Portal</h4><div id="radList"></div></div></div>
+  <div id="tab_pharm" style="display:none;"><div class="card"><h4 style="margin:0 0 8px 0;">Pharmacy Portal</h4><div id="pharmList"></div></div></div>
+</div>
+
+<div id="parchaArea">
+  <div class="pr-head">
+    <h2 style="margin:0;">NBS Poly Clinic</h2>
+    <p style="margin:2px 0;">Sadhanganj Sewaith Road, Soraon, Prayagraj</p>
+    <p style="margin:2px 0;font-size:11px;" id="pr_info">-</p>
+  </div>
+  <h3 id="pr_name" style="margin:5px 0;">-</h3>
+  <table class="pr-vitals">
+    <tr><th>BP</th><th>Sugar</th><th>SpO2</th><th>Pulse</th><th>Weight</th></tr>
+    <tr><td id="pr_bp">-</td><td id="pr_sugar">-</td><td id="pr_spo2">-</td><td id="pr_pulse">-</td><td id="pr_weight">-</td></tr>
+  </table>
+  <p><strong>Diagnosis:</strong> <span id="pr_diag">-</span></p>
+  <p><strong>Pathology:</strong> <span id="pr_path">-</span> | <strong>Radiology:</strong> <span id="pr_rad">-</span></p>
+  <p><strong>Rx (Medicines):</strong></p>
+  <div id="pr_rx" style="font-weight:bold;font-size:14px;padding:8px;border:1px dashed #666;min-height:60px;">-</div>
+  <div style="margin-top:40px;display:flex;justify-content:space-between;">
+    <span>*Dawa samay par lein.</span>
+    <span style="border-top:1px solid #000;width:140px;text-align:center;">Doctor Signature</span>
+  </div>
+</div>
 
 </body>
-    </html>
+</html>
