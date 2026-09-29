@@ -29,6 +29,7 @@
     .grid-vitals { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; margin-bottom: 10px; }
 
     .btn { background: #0284c7; color: white; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; font-size: 15px; margin-top: 6px; }
+    .btn:active { opacity: 0.8; }
     .btn-print { background: #475569; }
     .btn-green { background: #10b981; }
     .btn-purple { background: #8b5cf6; }
@@ -51,7 +52,6 @@
     .alert-success { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
     .alert-error { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
 
-    /* PRINT RECEIPT STYLING */
     #printableParcha { display: none; background: white; padding: 25px; border: 1px solid #000; color: #000; font-family: Arial, sans-serif; }
     .print-clinic-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px; }
     .print-clinic-header h2 { margin: 0; font-size: 24px; text-transform: uppercase; }
@@ -93,10 +93,10 @@
 
     <div class="form-group">
       <label>Password / PIN Dalein:</label>
-      <input type="password" id="login_password" placeholder="Enter PIN">
+      <input type="text" id="login_password" placeholder="PIN dalein (e.g. 1111)">
     </div>
 
-    <button type="button" class="btn" onclick="handleLoginAction()">Login Karein</button>
+    <button type="button" class="btn" id="loginBtn">Login Karein</button>
   </div>
 
   <!-- MAIN APP CONTAINER -->
@@ -104,15 +104,15 @@
 
     <div class="user-banner">
       <span>Logged In: <strong id="currentDeptLabel" style="color:#0284c7;">-</strong></span>
-      <button class="btn-logout" type="button" onclick="handleLogoutAction()">Logout</button>
+      <button class="btn-logout" type="button" id="logoutBtn">Logout</button>
     </div>
 
     <div class="nav-bar">
-      <button class="nav-btn" id="btn_reg" onclick="showPortalTab('reg')">1. Reg</button>
-      <button class="nav-btn" id="btn_doc" onclick="showPortalTab('doc')">2. Doctor</button>
-      <button class="nav-btn" id="btn_path" onclick="showPortalTab('path')">3. Pathology</button>
-      <button class="nav-btn" id="btn_rad" onclick="showPortalTab('rad')">4. Radiology</button>
-      <button class="nav-btn" id="btn_pharm" onclick="showPortalTab('pharm')">5. Pharmacy</button>
+      <button class="nav-btn" id="nav_reg">1. Reg</button>
+      <button class="nav-btn" id="nav_doc">2. Doctor</button>
+      <button class="nav-btn" id="nav_path">3. Pathology</button>
+      <button class="nav-btn" id="nav_rad">4. Radiology</button>
+      <button class="nav-btn" id="nav_pharm">5. Pharmacy</button>
     </div>
 
     <!-- 1. REGISTRATION -->
@@ -148,7 +148,7 @@
           <div><label>Weight (kg):</label><input type="text" id="reg_weight" placeholder="65"></div>
         </div>
 
-        <button class="btn" type="button" onclick="savePatientNow()">Register Patient</button>
+        <button class="btn" type="button" id="regBtn">Register Patient</button>
         <div id="statusAlert"></div>
       </div>
     </div>
@@ -159,7 +159,7 @@
         <h3>Doctor Consultation & Rx</h3>
         <div class="form-group">
           <label>Select Registered Patient:</label>
-          <select id="doc_patient_select" onchange="loadDoctorPatientDetails()">
+          <select id="doc_patient_select">
             <option value="">-- Select Patient --</option>
           </select>
         </div>
@@ -190,8 +190,8 @@
           <textarea id="doc_medicines" rows="3" placeholder="Medicine Name - Dosage - Duration..."></textarea>
         </div>
 
-        <button class="btn" type="button" onclick="saveDoctorAdvice()">Save & Sync to All Departments</button>
-        <button class="btn btn-print" type="button" onclick="printPrescription()">🖨️ Print Prescription / Parcha</button>
+        <button class="btn" type="button" id="saveDocBtn">Save & Sync to All Departments</button>
+        <button class="btn btn-print" type="button" id="printDocBtn">🖨️ Print Prescription / Parcha</button>
       </div>
     </div>
 
@@ -292,8 +292,37 @@
     var currentRole = null;
     var cachedPatients = [];
 
-    // 1. AUTHENTICATION
-    function handleLoginAction() {
+    function getStorageData() {
+      try {
+        var d = localStorage.getItem('nbs_clinic_local_data');
+        return d ? JSON.parse(d) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function setStorageData(arr) {
+      try {
+        localStorage.setItem('nbs_clinic_local_data', JSON.stringify(arr));
+      } catch (e) {}
+    }
+
+    function switchPortal(role) {
+      var portals = ['reg', 'doc', 'path', 'rad', 'pharm'];
+      for (var i = 0; i < portals.length; i++) {
+        var id = portals[i];
+        var el = document.getElementById('section_' + id);
+        var btn = document.getElementById('nav_' + id);
+        if (el) el.style.display = (id === role) ? 'block' : 'none';
+        if (btn) {
+          if (id === role) btn.classList.add('active');
+          else btn.classList.remove('active');
+        }
+      }
+    }
+
+    // Attach Login
+    document.getElementById('loginBtn').onclick = function() {
       var dept = document.getElementById('login_dept').value;
       var pass = document.getElementById('login_password').value.trim();
 
@@ -309,57 +338,98 @@
           rad: "Radiology Portal",
           pharm: "Pharmacy Portal"
         };
-
         document.getElementById('currentDeptLabel').innerText = labels[dept];
-        showPortalTab(dept);
+        switchPortal(dept);
+        renderData();
       } else {
-        alert("Galat PIN! Sahi PIN dalein (Registration: 1111)");
+        alert("Galat PIN! Sahi PIN dalein (Registration: 1111, Doctor: 2222)");
       }
-    }
+    };
 
-    function handleLogoutAction() {
+    // Attach Logout
+    document.getElementById('logoutBtn').onclick = function() {
       currentRole = null;
       document.getElementById('login_password').value = "";
       document.getElementById('mainAppSection').style.display = 'none';
       document.getElementById('authSection').style.display = 'block';
-    }
+    };
 
-    function showPortalTab(tabId) {
-      var tabs = ['reg', 'doc', 'path', 'rad', 'pharm'];
-      for (var i = 0; i < tabs.length; i++) {
-        var t = tabs[i];
-        var sec = document.getElementById('section_' + t);
-        var btn = document.getElementById('btn_' + t);
-        if (sec) sec.style.display = (t === tabId) ? 'block' : 'none';
-        if (btn) {
-          if (t === tabId) btn.classList.add('active');
-          else btn.classList.remove('active');
+    // Nav bar buttons
+    document.getElementById('nav_reg').onclick = function() { switchPortal('reg'); };
+    document.getElementById('nav_doc').onclick = function() { switchPortal('doc'); };
+    document.getElementById('nav_path').onclick = function() { switchPortal('path'); };
+    document.getElementById('nav_rad').onclick = function() { switchPortal('rad'); };
+    document.getElementById('nav_pharm').onclick = function() { switchPortal('pharm'); };
+
+    // Register Patient Button
+    document.getElementById('regBtn').onclick = function() {
+      var alertBox = document.getElementById('statusAlert');
+      var mob = document.getElementById('reg_mobile').value.trim();
+      var nm = document.getElementById('reg_name').value.trim();
+      var ag = document.getElementById('reg_age').value.trim();
+      var gen = document.getElementById('reg_gender').value;
+
+      alertBox.style.display = 'block';
+
+      if (!mob || !nm || !ag) {
+        alertBox.className = 'alert-error';
+        alertBox.innerText = 'Kripya Mobile, Name aur Age bharein!';
+        return;
+      }
+
+      var newPt = {
+        mobile: mob,
+        name: nm,
+        age: ag,
+        gender: gen,
+        bp: document.getElementById('reg_bp').value.trim() || "-",
+        sugar: document.getElementById('reg_sugar').value.trim() || "-",
+        spo2: document.getElementById('reg_spo2').value.trim() || "-",
+        pulse: document.getElementById('reg_pulse').value.trim() || "-",
+        weight: document.getElementById('reg_weight').value.trim() || "-",
+        diagnosis: "Pending Consultation",
+        pathologyTests: "",
+        pathologyReport: "",
+        pathologyStatus: "Pending",
+        radiologyTests: "",
+        radiologyReport: "",
+        radiologyStatus: "Pending",
+        medicines: "",
+        pharmacyStatus: "Pending"
+      };
+
+      var list = getStorageData();
+      var exists = false;
+      for (var i = 0; i < list.length; i++) {
+        if (list[i].mobile === mob) {
+          list[i] = newPt;
+          exists = true;
+          break;
         }
       }
-    }
+      if (!exists) list.push(newPt);
+      setStorageData(list);
 
-    // 2. DATA STORAGE
-    function loadSavedPatients() {
-      try {
-        var str = localStorage.getItem('clinic_clean_db_v1');
-        return str ? JSON.parse(str) : [];
-      } catch (e) {
-        return [];
-      }
-    }
+      // Clear
+      document.getElementById('reg_mobile').value = '';
+      document.getElementById('reg_name').value = '';
+      document.getElementById('reg_age').value = '';
+      document.getElementById('reg_bp').value = '';
+      document.getElementById('reg_sugar').value = '';
+      document.getElementById('reg_spo2').value = '';
+      document.getElementById('reg_pulse').value = '';
+      document.getElementById('reg_weight').value = '';
 
-    function saveToLocalStorage(data) {
-      try {
-        localStorage.setItem('clinic_clean_db_v1', JSON.stringify(data));
-      } catch (e) {}
-    }
+      alertBox.className = 'alert-success';
+      alertBox.innerText = '✅ Patient "' + nm + '" Successfully Register Ho Gaya!';
+      renderData();
+    };
 
-    // 3. UI REFRESH
-    function refreshUI(patients) {
-      cachedPatients = patients || [];
+    function renderData() {
+      cachedPatients = getStorageData();
       var docSelect = document.getElementById('doc_patient_select');
-      var selectedVal = docSelect ? docSelect.value : "";
-      if (docSelect) docSelect.innerHTML = '<option value="">-- Select Patient --</option>';
+      var selVal = docSelect.value;
+      docSelect.innerHTML = '<option value="">-- Select Patient --</option>';
 
       var pathHtml = '';
       var radHtml = '';
@@ -374,29 +444,11 @@
 
       for (var i = 0; i < cachedPatients.length; i++) {
         var p = cachedPatients[i];
-        if (docSelect) docSelect.innerHTML += '<option value="' + p.mobile + '">' + p.name + ' (' + p.mobile + ')</option>';
+        docSelect.innerHTML += '<option value="' + p.mobile + '">' + p.name + ' (' + p.mobile + ')</option>';
 
+        // Pathology
         var pathTestsText = p.pathologyTests ? p.pathologyTests : '<span style="color:#94a3b8; font-style:italic;">No Test Prescribed</span>';
         pathHtml += '<div class="patient-card">' +
           '<div class="patient-header"><div><span class="patient-name">' + p.name + '</span> (' + p.gender + ', ' + p.age + ' yrs)<div class="patient-meta">Mob: ' + p.mobile + ' | BP: ' + (p.bp || '-') + ' | Sugar: ' + (p.sugar || '-') + '</div></div>' +
           '<span class="badge ' + (p.pathologyStatus === 'Completed' ? 'badge-done' : 'badge-pending') + '">' + (p.pathologyStatus || 'Pending') + '</span></div>' +
-          '<div class="readonly-box"><p><strong>Recommended Test:</strong> <span style="color:#d97706; font-weight:bold;">' + pathTestsText + '</span></p>' +
-          (p.pathologyReport ? '<p style="color:#059669;"><strong>Uploaded Lab Report:</strong> ' + p.pathologyReport + '</p>' : '') + '</div>' +
-          '<div class="action-box"><input type="text" id="path_res_' + p.mobile + '" placeholder="e.g. Hemoglobin 12.5, TLC Normal" style="margin-bottom:6px;">' +
-          '<button class="btn btn-amber" type="button" onclick="savePathReport(\'' + p.mobile + '\')">Upload Lab Report</button></div></div>';
-
-        var radTestsText = p.radiologyTests ? p.radiologyTests : '<span style="color:#94a3b8; font-style:italic;">No X-Ray Prescribed</span>';
-        radHtml += '<div class="patient-card">' +
-          '<div class="patient-header"><div><span class="patient-name">' + p.name + '</span> (' + p.gender + ', ' + p.age + ' yrs)<div class="patient-meta">Mob: ' + p.mobile + '</div></div>' +
-          '<span class="badge ' + (p.radiologyStatus === 'Completed' ? 'badge-done' : 'badge-pending') + '">' + (p.radiologyStatus || 'Pending') + '</span></div>' +
-          '<div class="readonly-box"><p><strong>Advised X-Ray / Scan:</strong> <span style="color:#8b5cf6; font-weight:bold;">' + radTestsText + '</span></p>' +
-          (p.radiologyReport ? '<p style="color:#059669;"><strong>Radiology Report:</strong> ' + p.radiologyReport + '</p>' : '') + '</div>' +
-          '<div class="action-box"><input type="text" id="rad_res_' + p.mobile + '" placeholder="Scan report impression..." style="margin-bottom:6px;">' +
-          '<button class="btn btn-purple" type="button" onclick="saveRadReport(\'' + p.mobile + '\')">Submit Scan Report</button></div></div>';
-
-        var medsText = p.medicines ? p.medicines : '<span style="color:#94a3b8; font-style:italic;">No Medicines Prescribed</span>';
-        pharmHtml += '<div class="patient-card">' +
-          '<div class="patient-header"><div><span class="patient-name">' + p.name + '</span> (' + p.gender + ', ' + p.age + ' yrs)<div class="patient-meta">Mob: ' + p.mobile + '</div></div>' +
-          '<span class="badge ' + (p.pharmacyStatus === 'Dispensed' ? 'badge-done' : 'badge-pending') + '">' + (p.pharmacyStatus || 'Pending') + '</span></div>' +
-          '<div class="readonly-box"><p><strong>Doctor Prescription:</strong> <span style="color:#0284c7; font-weight:bold;">' + medsText + '</span></p></div>' +
-          '<div class="action-box"><button class="btn btn-green" type="button" onclick="dispenseMed(\'' + p.mobile + '\')">Mark 
+          '<div class="readonly-box"><p><strong>Recommended Test:</strong> <span style="c
