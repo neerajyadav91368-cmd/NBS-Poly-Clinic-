@@ -4,36 +4,34 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NBS Poly Clinic Management</title>
-
   <style>
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
-    body { background-color: #f1f5f9; margin: 0; padding: 12px; color: #1e293b; }
-    .header { text-align: center; margin-bottom: 15px; }
+    body { background-color: #f1f5f9; margin: 0; padding: 10px; color: #1e293b; }
+    .header { text-align: center; margin-bottom: 10px; }
     .header h1 { color: #0284c7; margin: 0; font-size: 20px; }
-    .card { background: white; padding: 16px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 12px; }
-    .form-group { margin-bottom: 10px; }
-    label { display: block; font-weight: bold; font-size: 13px; margin-bottom: 4px; }
-    input, select, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; }
-    .btn { background: #0284c7; color: white; padding: 12px; border: none; border-radius: 6px; font-weight: bold; width: 100%; font-size: 15px; cursor: pointer; margin-top: 5px; }
+    .card { background: white; padding: 14px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 10px; }
+    .form-group { margin-bottom: 8px; }
+    label { display: block; font-weight: bold; font-size: 13px; margin-bottom: 3px; }
+    input, select { width: 100%; padding: 9px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; }
+    .btn { background: #0284c7; color: white; padding: 11px; border: none; border-radius: 6px; font-weight: bold; width: 100%; font-size: 14px; cursor: pointer; margin-top: 6px; }
     .btn:active { opacity: 0.85; }
-    .nav-bar { display: flex; gap: 5px; overflow-x: auto; margin-bottom: 12px; }
-    .nav-btn { flex: 1; min-width: 80px; padding: 8px 4px; border: none; background: #e2e8f0; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; }
+    .nav-bar { display: flex; gap: 4px; overflow-x: auto; margin-bottom: 10px; }
+    .nav-btn { flex: 1; min-width: 75px; padding: 8px 3px; border: none; background: #e2e8f0; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; }
     .nav-btn.active { background: #0284c7; color: white; }
-    .grid-v { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 6px; margin-bottom: 10px; }
-    .patient-box { border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px; margin-bottom: 10px; background: #fff; }
-    #msgAlert, #docMsgAlert { display: none; padding: 12px; border-radius: 6px; margin-top: 10px; font-weight: bold; text-align: center; font-size: 14px; background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+    .grid-v { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 6px; margin-bottom: 8px; }
+    .patient-box { border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px; margin-bottom: 8px; background: #fff; }
+    #msgAlert, #docMsgAlert { display: none; padding: 10px; border-radius: 6px; margin-top: 8px; font-weight: bold; text-align: center; font-size: 13px; background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
 
-    /* PROFESSIONAL PRINT RECEIPT FORMAT */
     #parchaArea { display: none; background: white; padding: 20px; color: #000; }
-    .pr-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 15px; }
+    .pr-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 12px; }
     .pr-header h2 { margin: 0; font-size: 22px; text-transform: uppercase; color: #000; }
     .pr-header p { margin: 2px 0; font-size: 12px; }
-    .pr-info { display: flex; justify-content: space-between; border-bottom: 1px dashed #444; padding-bottom: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.6; }
-    .pr-vitals { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 12px; }
-    .pr-vitals th, .pr-vitals td { border: 1px solid #000; padding: 6px; text-align: center; }
-    .pr-section { margin-bottom: 14px; font-size: 13px; }
-    .pr-section h4 { margin: 0 0 4px 0; border-bottom: 1px solid #999; padding-bottom: 2px; font-size: 13px; }
-    .pr-footer { margin-top: 45px; display: flex; justify-content: space-between; font-size: 12px; }
+    .pr-info { display: flex; justify-content: space-between; border-bottom: 1px dashed #444; padding-bottom: 8px; margin-bottom: 10px; font-size: 13px; line-height: 1.5; }
+    .pr-vitals { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 12px; }
+    .pr-vitals th, .pr-vitals td { border: 1px solid #000; padding: 5px; text-align: center; }
+    .pr-section { margin-bottom: 12px; font-size: 13px; }
+    .pr-section h4 { margin: 0 0 3px 0; border-bottom: 1px solid #999; padding-bottom: 2px; font-size: 13px; }
+    .pr-footer { margin-top: 40px; display: flex; justify-content: space-between; font-size: 12px; }
 
     @media print {
       body { background: white !important; padding: 0 !important; margin: 0 !important; }
@@ -163,7 +161,7 @@
       var alertBox = document.getElementById('msgAlert');
       alertBox.style.display = 'block';
       alertBox.innerText = '✅ Patient "' + nm + '" Successfully Register Ho Gaya!';
-      setTimeout(function() { alertBox.style.display = 'none'; }, 4000);
+      setTimeout(function() { alertBox.style.display = 'none'; }, 3000);
 
       renderAllData();
     };
@@ -260,7 +258,7 @@
         var alertBox = document.getElementById('docMsgAlert');
         alertBox.style.display = 'block';
         alertBox.innerText = '✅ Doctor Advice & Medicines Sabhi Departments ke liye Save Ho Gayi!';
-        setTimeout(function() { alertBox.style.display = 'none'; }, 4000);
+        setTimeout(function() { alertBox.style.display = 'none'; }, 3000);
         alert("✅ Doctor Advice aur Medicines successfully save ho gayi!");
       } else {
         alert("Patient data nahi mila!");
@@ -345,7 +343,7 @@
     <h1>NBS Poly Clinic Portal</h1>
   </div>
 
-  <!-- 1. LOGIN SCREEN -->
+  <!-- LOGIN SCREEN -->
   <div id="loginScreen" class="card" style="max-width: 380px; margin: 20px auto;">
     <h3 style="text-align:center; margin-top:0;">Staff Secure Login</h3>
     
@@ -368,7 +366,7 @@
     <button type="button" class="btn" onclick="executeLogin()">Login Karein</button>
   </div>
 
-  <!-- 2. MAIN APP SCREEN -->
+  <!-- MAIN APP SCREEN -->
   <div id="portalScreen" style="display: none;">
     <div style="display:flex; justify-content:space-between; align-items:center; background:#e0f2fe; padding:8px 12px; border-radius:6px; margin-bottom:10px;">
       <span style="font-size:13px; font-weight:bold; color:#0369a1;" id="activeRoleText">-</span>
@@ -433,7 +431,7 @@
         </div>
         <div class="form-group">
           <label>Symptoms / Diagnosis:</label>
-          <textarea id="doc_diag" rows="2" placeholder="Fever, cough..."></textarea>
+          <input type="text" id="doc_diag" placeholder="Fever, cough...">
         </div>
         <div class="form-group">
           <label>Advise Pathology Tests:</label>
@@ -445,4 +443,95 @@
         </div>
         <div class="form-group">
           <label>Prescribe Medicines (Rx):</label>
-          <textarea id="doc_rx" rows="3" placeholder="
+          <input type="text" id="doc_rx" placeholder="Medicine Name - Dosage - Duration">
+        </div>
+      !-- PATHOLOGY -->
+    <div id="tab_path" style="display: none;">
+      <div class="card">
+        <h3 style="margin-top:0;">Pathology Lab Portal</h3>
+        <div id="pathList">No patients found.</div>
+      </div>
+    </div>
+
+    <!-- RADIOLOGY -->
+    <div id="tab_rad" style="display: none;">
+      <div class="card">
+        <h3 style="margin-top:0;">Radiology & Scan Portal</h3>
+        <div id="radList">No patients found.</div>
+      </div>
+    </div>
+
+    <!-- PHARMACY -->
+    <div id="tab_pharm" style="display: none;">
+      <div class="card">
+        <h3 style="margin-top:0;">Pharmacy Portal</h3>
+        <div id="pharmList">No patients found.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- PRINTABLE OPD PARCHA -->
+  <div id="parchaArea">
+    <div class="pr-header">
+      <h2>NBS Poly Clinic</h2>
+      <p>Sadhanganj Sewaith Road, Soraon, Prayagraj</p>
+      <p style="font-size:11px;">OPD Prescription & Diagnostic Receipt</p>
+    </div>
+
+    <div class="pr-info">
+      <div>
+        <strong>Name:</strong> <span id="pr_name">-</span><br>
+        <strong>Age / Sex:</strong> <span id="pr_age_gender">-</span>
+      </div>
+      <div style="text-align:right;">
+        <strong>Patient ID / Mob:</strong> <span id="pr_mob">-</span><br>
+        <strong>Date:</strong> <span id="pr_date">-</span>
+      </div>
+    </div>
+
+    <table class="pr-vitals">
+      <thead>
+        <tr style="background:#f1f5f9;">
+          <th>BP (mmHg)</th>
+          <th>Sugar (mg/dL)</th>
+          <th>SpO2 (%)</th>
+          <th>Pulse (PR)</th>
+          <th>Weight (Kg)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td id="pr_bp">-</td>
+          <td id="pr_sugar">-</td>
+          <td id="pr_spo2">-</td>
+          <td id="pr_pulse">-</td>
+          <td id="pr_weight">-</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="pr-section">
+      <h4>Diagnosis / Symptoms:</h4>
+      <p id="pr_diag" style="margin:4px 0; min-height:18px;">None</p>
+    </div>
+
+    <div class="pr-section">
+      <h4>Advised Investigations (Lab / Scan):</h4>
+      <p style="margin:2px 0;"><strong>Pathology:</strong> <span id="pr_path">None</span></p>
+      <p style="margin:2px 0;"><strong>Radiology:</strong> <span id="pr_rad">None</span></p>
+    </div>
+
+    <div class="pr-section">
+      <h4>Rx (Medicines Advised):</h4>
+      <p id="pr_rx" style="font-weight:bold; white-space:pre-wrap; min-height:60px; margin:4px 0;">None</p>
+    </div>
+
+    <div class="pr-footer">
+      <div><em>*Kripya samay par dawa lein. Agli baar parcha sath layein.</em></div>
+      <div style="border-top:1px solid #000; width:150px; text-align:center; padding-top:4px;">Doctor Signature</div>
+    </div>
+  </div>
+
+</body>
+    </html>
