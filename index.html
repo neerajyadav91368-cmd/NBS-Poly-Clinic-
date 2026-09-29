@@ -29,7 +29,7 @@
     .grid-vitals { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; margin-bottom: 10px; }
 
     .btn { background: #0284c7; color: white; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; font-size: 15px; margin-top: 6px; }
-    .btn:active { opacity: 0.85; }
+    .btn:active { opacity: 0.8; }
     .btn-print { background: #475569; }
     .btn-green { background: #10b981; }
     .btn-purple { background: #8b5cf6; }
@@ -48,6 +48,11 @@
     .badge-pending { background: #fef3c7; color: #b45309; }
     .badge-done { background: #dcfce7; color: #15803d; }
 
+    #statusAlert { display: none; padding: 12px; border-radius: 6px; margin-top: 10px; font-weight: bold; text-align: center; font-size: 14px; }
+    .alert-success { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+    .alert-error { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+
+    /* PRINT RECEIPT STYLING */
     #printableParcha { display: none; background: white; padding: 25px; border: 1px solid #000; color: #000; font-family: Arial, sans-serif; }
     .print-clinic-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px; }
     .print-clinic-header h2 { margin: 0; font-size: 24px; text-transform: uppercase; }
@@ -65,6 +70,7 @@
     }
   </style>
 
+  <!-- Login aur Portal Navigation -->
   <script>
     var PASSWORDS = { reg: "1111", doc: "2222", path: "3333", rad: "4444", pharm: "5555" };
     var currentRole = null;
@@ -89,7 +95,7 @@
         document.getElementById('currentDeptLabel').innerText = labels[dept];
         showPortalTab(dept);
       } else {
-        alert("Galat PIN! Sahi password dalein.");
+        alert("Galat PIN! Sahi PIN dalein (Registration: 1111)");
       }
     }
 
@@ -119,7 +125,7 @@
 
   <div class="header">
     <h1>NBS Poly Clinic</h1>
-    <p>Department Portal & Live System</p>
+    <p>Department Portal & Management</p>
   </div>
 
   <!-- AUTH SECTION -->
@@ -165,38 +171,37 @@
     <div id="section_reg" style="display: none;">
       <div class="card">
         <h3>New Patient Registration & Primary Vitals</h3>
-        <form onsubmit="event.preventDefault(); registerDirectly();">
-          <div class="form-group">
-            <label>Mobile Number (Patient ID):</label>
-            <input type="tel" id="reg_mobile" placeholder="Mobile number..." required>
+        <div class="form-group">
+          <label>Mobile Number (Patient ID):</label>
+          <input type="tel" id="reg_mobile" placeholder="Mobile number...">
+        </div>
+        <div class="form-group">
+          <label>Patient Full Name:</label>
+          <input type="text" id="reg_name" placeholder="Patient name...">
+        </div>
+        <div class="form-group">
+          <label>Age & Gender:</label>
+          <div style="display:flex; gap:10px;">
+            <input type="number" id="reg_age" placeholder="Age" style="width:50%;">
+            <select id="reg_gender" style="width:50%;">
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
           </div>
-          <div class="form-group">
-            <label>Patient Full Name:</label>
-            <input type="text" id="reg_name" placeholder="Patient name..." required>
-          </div>
-          <div class="form-group">
-            <label>Age & Gender:</label>
-            <div style="display:flex; gap:10px;">
-              <input type="number" id="reg_age" placeholder="Age" style="width:50%;" required>
-              <select id="reg_gender" style="width:50%;">
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-          </div>
+        </div>
 
-          <label style="margin-top:10px;">Patient Vitals (At Entry):</label>
-          <div class="grid-vitals">
-            <div><label>BP (mmHg):</label><input type="text" id="reg_bp" placeholder="120/80"></div>
-            <div><label>Sugar (mg/dL):</label><input type="text" id="reg_sugar" placeholder="110"></div>
-            <div><label>SpO2 (%):</label><input type="text" id="reg_spo2" placeholder="98"></div>
-            <div><label>Pulse (PR):</label><input type="text" id="reg_pulse" placeholder="72"></div>
-            <div><label>Weight (kg):</label><input type="text" id="reg_weight" placeholder="65"></div>
-          </div>
+        <label style="margin-top:10px;">Patient Vitals (At Entry):</label>
+        <div class="grid-vitals">
+          <div><label>BP (mmHg):</label><input type="text" id="reg_bp" placeholder="120/80"></div>
+          <div><label>Sugar (mg/dL):</label><input type="text" id="reg_sugar" placeholder="110"></div>
+          <div><label>SpO2 (%):</label><input type="text" id="reg_spo2" placeholder="98"></div>
+          <div><label>Pulse (PR):</label><input type="text" id="reg_pulse" placeholder="72"></div>
+          <div><label>Weight (kg):</label><input type="text" id="reg_weight" placeholder="65"></div>
+        </div>
 
-          <button class="btn" type="submit" id="regBtn">Register Patient</button>
-        </form>
+        <button class="btn" type="button" id="regBtn" onclick="savePatientNow()">Register Patient</button>
+        <div id="statusAlert"></div>
       </div>
     </div>
 
@@ -334,7 +339,7 @@
     </div>
   </div>
 
-  <!-- Firebase Scripts -->
+  <!-- Firebase Scripts (Safe Bottom Loading) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
@@ -342,22 +347,24 @@
     var db = null;
     var cachedPatients = [];
 
-    function fetchAllLocal() {
+    // Local Storage Helpers
+    function loadSavedPatients() {
       try {
-        var str = localStorage.getItem('nbs_pts_v4');
+        var str = localStorage.getItem('clinic_store_final');
         return str ? JSON.parse(str) : [];
       } catch (e) {
         return [];
       }
     }
 
-    function saveAllLocal(arr) {
+    function saveToLocalStorage(data) {
       try {
-        localStorage.setItem('nbs_pts_v4', JSON.stringify(arr));
+        localStorage.setItem('clinic_store_final', JSON.stringify(data));
       } catch (e) {}
     }
 
-    function updateDepartmentCards(patients) {
+    // Refresh All Department Views
+    function refreshUI(patients) {
       cachedPatients = patients || [];
       var docSelect = document.getElementById('doc_patient_select');
       var selectedVal = docSelect ? docSelect.value : "";
@@ -399,6 +406,4 @@
         var medsText = p.medicines ? p.medicines : '<span style="color:#94a3b8; font-style:italic;">No Medicines Prescribed</span>';
         pharmHtml += '<div class="patient-card">' +
           '<div class="patient-header"><div><span class="patient-name">' + p.name + '</span> (' + p.gender + ', ' + p.age + ' yrs)<div class="patient-meta">Mob: ' + p.mobile + '</div></div>' +
-          '<span class="badge ' + (p.pharmacyStatus === 'Dispensed' ? 'badge-done' : 'badge-pending') + '">' + (p.pharmacyStatus || 'Pending') + '</span></div>' +
-          '<div class="readonly-box"><p><strong>Doctor Prescription:</strong> <span style="color:#0284c7; font-weight:bold;">' + medsText + '</span></p></div>' +
-          '<div class="action-box"><button class="btn btn-green" type="button" onclick="dispenseMed(\'' + p.mobile + '\')">Mark Medicines as Dispensed</button></div>
+          '<span class="badge ' + (p.pharmacyStatus === 'Dispensed' ? 'badge-done' : 'badg
