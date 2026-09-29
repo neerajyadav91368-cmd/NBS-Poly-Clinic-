@@ -15,11 +15,15 @@ input,select,textarea{width:100%;padding:8px;border:1px solid #cbd5e1;border-rad
 .nav-btn{flex:1;min-width:70px;padding:8px 2px;border:none;background:#e2e8f0;border-radius:4px;font-size:11px;font-weight:bold;cursor:pointer;}
 .nav-btn.active{background:#0284c7;color:#fff;}
 .grid-v{display:grid;grid-template-columns:repeat(auto-fit,minmax(65px,1fr));gap:4px;margin-bottom:6px;}
-.patient-box{border:1px solid #cbd5e1;border-radius:6px;padding:8px;margin-bottom:8px;background:#fff;}
+.patient-box{border:1px solid #cbd5e1;border-radius:6px;padding:10px;margin-bottom:10px;background:#fff;}
 .history-box{background:#fef3c7;border:1px solid #f59e0b;padding:10px;border-radius:6px;margin:8px 0;font-size:12px;display:none;color:#92400e;}
 #msgAlert,#docMsgAlert{display:none;padding:8px;border-radius:6px;margin-top:6px;font-weight:bold;text-align:center;font-size:12px;background:#dcfce7;color:#15803d;border:1px solid #86efac;}
 
-/* CLEAN OPD PRINT LAYOUT */
+/* STATUS BADGES */
+.badge-pending{background:#fee2e2;color:#b91c1c;border:1px solid #f87171;padding:2px 6px;border-radius:4px;font-weight:bold;font-size:11px;}
+.badge-done{background:#dcfce7;color:#15803d;border:1px solid #86efac;padding:2px 6px;border-radius:4px;font-weight:bold;font-size:11px;}
+
+/* PRINT OPD PARCHA */
 #parchaArea{display:none;background:#fff;padding:20px;color:#000;font-size:13px;line-height:1.5;}
 .pr-head{text-align:center;border-bottom:2px solid #000;padding-bottom:6px;margin-bottom:12px;}
 .pr-vitals{width:100%;border-collapse:collapse;margin:10px 0;}
@@ -58,7 +62,6 @@ window.showPortalTab=function(t){
   }
 };
 
-// INSTANT REAL-TIME SEARCH AS USER TYPES
 window.searchPatientOnInput=function(){
   var mob=document.getElementById('p_mob').value.trim();
   var hBox=document.getElementById('regHistoryBox');
@@ -71,7 +74,6 @@ window.searchPatientOnInput=function(){
         document.getElementById('p_age').value=p.age;
         document.getElementById('p_gender').value=p.gender;
         
-        // Show Instant History
         hBox.style.display='block';
         hBox.innerHTML='<strong>⚡ Purana Record Mila: '+p.name+' ('+p.age+' Yrs / '+p.gender+')</strong><br>' +
           '📅 Pichhli Visit: <b>'+(p.lastVisitDate||'Purana Record')+'</b><br>' +
@@ -101,11 +103,13 @@ window.savePatientDirect=function(){
     diagnosis:oldPt?oldPt.diagnosis:"",
     pathTests:oldPt?oldPt.pathTests:"",
     pathReport:oldPt?oldPt.pathReport:"",
+    pathFile:oldPt?oldPt.pathFile:"",
     radTests:oldPt?oldPt.radTests:"",
     radReport:oldPt?oldPt.radReport:"",
+    radFile:oldPt?oldPt.radFile:"",
     medicines:oldPt?oldPt.medicines:"",
     dispensed:false,
-    prevHistory:oldPt?{diag:oldPt.diagnosis,rx:oldPt.medicines,date:oldPt.lastVisitDate,bp:oldPt.bp,sugar:oldPt.sugar}:null
+    prevHistory:oldPt?{diag:oldPt.diagnosis,rx:oldPt.medicines,date:oldPt.lastVisitDate}:null
   };
 
   if(idx>=0) list[idx]=pt; else list.push(pt);
@@ -125,16 +129,66 @@ window.renderAllData=function(){
   var list=getStoredData();var dSel=document.getElementById('doc_p_select');if(!dSel)return;
   var cVal=dSel.value;dSel.innerHTML='<option value="">-- Select Patient --</option>';
   var pHtml='',rHtml='',mHtml='';
+
   for(var i=0;i<list.length;i++){
-    var p=list[i];dSel.innerHTML+='<option value="'+p.mobile+'">'+p.name+' ('+p.mobile+')</option>';
-    pHtml+='<div class="patient-box"><strong>'+p.name+'</strong> ('+p.mobile+')<br><span style="color:#d97706;">Advised: '+(p.pathTests||'None')+'</span><br>'+(p.pathReport?'Report: '+p.pathReport+'<br>':'')+'<input type="text" id="pr_'+p.mobile+'" placeholder="Result..." style="margin:4px 0;"><button class="btn" style="padding:4px;background:#d97706;" onclick="savePathRes(\''+p.mobile+'\')">Save Lab Report</button></div>';
-    rHtml+='<div class="patient-box"><strong>'+p.name+'</strong> ('+p.mobile+')<br><span style="color:#8b5cf6;">Advised: '+(p.radTests||'None')+'</span><br>'+(p.radReport?'Impression: '+p.radReport+'<br>':'')+'<input type="text" id="rr_'+p.mobile+'" placeholder="Scan result..." style="margin:4px 0;"><button class="btn" style="padding:4px;background:#8b5cf6;" onclick="saveRadRes(\''+p.mobile+'\')">Save Scan Report</button></div>';
-    mHtml+='<div class="patient-box"><strong>'+p.name+'</strong> ('+p.mobile+')<br><div style="color:#0284c7;white-space:pre-wrap;font-weight:bold;margin:4px 0;">Rx:<br>'+(p.medicines||'None')+'</div>Status: '+(p.dispensed?'Dispensed':'Pending')+'<button class="btn" style="padding:4px;background:#10b981;margin-top:4px;" onclick="markDispensed(\''+p.mobile+'\')">Mark Dispensed</button></div>';
+    var p=list[i];
+    dSel.innerHTML+='<option value="'+p.mobile+'">'+p.name+' ('+p.mobile+')</option>';
+    // 1. PATHOLOGY STATUS & CARD
+    if(p.pathTests){
+      var isPathDone = !!(p.pathReport || p.pathFile);
+      var pBadge = isPathDone ? '<span class="badge-done">🟢 COMPLETED</span>' : '<span class="badge-pending">🔴 PENDING</span>';
+      
+      pHtml += '<div class="patient-box">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">' +
+        '<strong>'+p.name+'</strong> ('+p.mobile+') '+pBadge+
+        '</div>' +
+        '<span style="color:#d97706;font-weight:bold;">Advised Tests: '+p.pathTests+'</span><br>' +
+        (p.pathReport ? '<div style="background:#f0fdf4;padding:4px;border-radius:4px;margin:4px 0;font-size:12px;"><b>Report:</b> '+p.pathReport+'</div>' : '') +
+        (p.pathFile ? '<a href="'+p.pathFile+'" target="_blank" style="color:#0284c7;font-size:12px;display:inline-block;margin-bottom:4px;">📄 View Uploaded Report File</a><br>' : '') +
+        '<input type="text" id="pr_'+p.mobile+'" placeholder="Enter test result findings..." value="'+(p.pathReport||'')+'" style="margin:4px 0;">' +
+        '<label style="font-size:11px;color:#64748b;">Upload Report Slip / Photo (Optional):</label>' +
+        '<input type="file" id="pf_'+p.mobile+'" style="margin-bottom:4px;font-size:12px;">' +
+        '<button class="btn" style="padding:6px;background:#d97706;" onclick="savePathRes(\''+p.mobile+'\')">Save & Upload Lab Report</button>' +
+        '</div>';
+    }
+
+    // 2. RADIOLOGY STATUS & CARD
+    if(p.radTests){
+      var isRadDone = !!(p.radReport || p.radFile);
+      var rBadge = isRadDone ? '<span class="badge-done">🟢 COMPLETED</span>' : '<span class="badge-pending">🔴 PENDING</span>';
+      
+      rHtml += '<div class="patient-box">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">' +
+        '<strong>'+p.name+'</strong> ('+p.mobile+') '+rBadge+
+        '</div>' +
+        '<span style="color:#8b5cf6;font-weight:bold;">Advised Scan: '+p.radTests+'</span><br>' +
+        (p.radReport ? '<div style="background:#f0fdf4;padding:4px;border-radius:4px;margin:4px 0;font-size:12px;"><b>Impression:</b> '+p.radReport+'</div>' : '') +
+        (p.radFile ? '<a href="'+p.radFile+'" target="_blank" style="color:#0284c7;font-size:12px;display:inline-block;margin-bottom:4px;">🖼️ View Uploaded X-Ray / Scan</a><br>' : '') +
+        '<input type="text" id="rr_'+p.mobile+'" placeholder="Enter scan impression findings..." value="'+(p.radReport||'')+'" style="margin:4px 0;">' +
+        '<label style="font-size:11px;color:#64748b;">Upload X-Ray / Scan Film (Optional):</label>' +
+        '<input type="file" id="rf_'+p.mobile+'" style="margin-bottom:4px;font-size:12px;">' +
+        '<button class="btn" style="padding:6px;background:#8b5cf6;" onclick="saveRadRes(\''+p.mobile+'\')">Save Scan Impression</button>' +
+        '</div>';
+    }
+
+    // 3. PHARMACY STATUS & CARD
+    if(p.medicines){
+      var mBadge = p.dispensed ? '<span class="badge-done">🟢 DISPENSED</span>' : '<span class="badge-pending">🔴 PENDING</span>';
+      
+      mHtml += '<div class="patient-box">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">' +
+        '<strong>'+p.name+'</strong> ('+p.mobile+') '+mBadge+
+        '</div>' +
+        '<div style="color:#0284c7;white-space:pre-wrap;font-weight:bold;margin:4px 0;background:#f8fafc;padding:6px;border-radius:4px;">Rx:<br>'+p.medicines+'</div>' +
+        (!p.dispensed ? '<button class="btn" style="padding:6px;background:#10b981;margin-top:4px;" onclick="markDispensed(\''+p.mobile+'\')">Mark Dispensed (Dawa Di Gayi)</button>' : '<span style="font-size:11px;color:#15803d;font-weight:bold;">✅ Patient ko dawa di ja chuki hai.</span>') +
+        '</div>';
+    }
   }
+
   if(cVal)dSel.value=cVal;
-  document.getElementById('pathList').innerHTML=pHtml||'Koi patient nahi hai.';
-  document.getElementById('radList').innerHTML=rHtml||'Koi patient nahi hai.';
-  document.getElementById('pharmList').innerHTML=mHtml||'Koi patient nahi hai.';
+  document.getElementById('pathList').innerHTML = pHtml || '<p style="color:#64748b;">Koi pending pathology test nahi hai.</p>';
+  document.getElementById('radList').innerHTML = rHtml || '<p style="color:#64748b;">Koi pending radiology scan nahi hai.</p>';
+  document.getElementById('pharmList').innerHTML = mHtml || '<p style="color:#64748b;">Koi pending prescription nahi hai.</p>';
 };
 
 window.loadDocDetails=function(){
@@ -147,15 +201,19 @@ window.loadDocDetails=function(){
   document.getElementById('doc_rad_t').value=p.radTests||"";
   document.getElementById('doc_rx').value=p.medicines||"";
 
+  // SHOW DOCTOR LIVE INVESTIGATION STATUS
   var hBox=document.getElementById('prevHistoryBox');
-  if(p.prevHistory && (p.prevHistory.rx || p.prevHistory.diag)){
-    hBox.style.display='block';
-    hBox.innerHTML='<strong>📋 Pichhli Visit Record ('+(p.prevHistory.date||'Earlier')+'):</strong><br>' +
-      'Pichhla Diagnosis: <b>'+(p.prevHistory.diag||'None')+'</b><br>' +
-      'Pichhli Dawaiyan:<div style="white-space:pre-wrap;color:#78350f;font-weight:bold;margin-top:3px;">'+(p.prevHistory.rx||'None')+'</div>';
-  } else {
-    hBox.style.display='none';
+  var statusReport = '';
+  if(p.pathTests){
+    statusReport += '<br>🔬 Pathology: ' + (p.pathReport ? '<span class="badge-done">Done: '+p.pathReport+'</span>' : '<span class="badge-pending">Pending</span>');
   }
+  if(p.radTests){
+    statusReport += '<br>🩻 Radiology: ' + (p.radReport ? '<span class="badge-done">Done: '+p.radReport+'</span>' : '<span class="badge-pending">Pending</span>');
+  }
+
+  hBox.style.display='block';
+  hBox.innerHTML='<strong>📋 Patient History & Status:</strong>' + statusReport + 
+    (p.prevHistory && p.prevHistory.rx ? '<div style="margin-top:4px;border-top:1px dashed #d97706;padding-top:4px;"><b>Pichhla Rx:</b> '+p.prevHistory.rx+'</div>' : '');
 };
 
 window.saveDocRx=function(){
@@ -204,9 +262,71 @@ window.printOPDParcha=function(){
   window.print();
 };
 
-window.savePathRes=function(m){var r=document.getElementById('pr_'+m).value;if(!r)return;var l=getStoredData();for(var i=0;i<l.length;i++){if(l[i].mobile===m){l[i].pathReport=r;break;}}setStoredData(l);renderAllData();alert("Report Saved!");};
-window.saveRadRes=function(m){var r=document.getElementById('rr_'+m).value;if(!r)return;var l=getStoredData();for(var i=0;i<l.length;i++){if(l[i].mobile===m){l[i].radReport=r;break;}}setStoredData(l);renderAllData();alert("Report Saved!");};
-window.markDispensed=function(m){var l=getStoredData();for(var i=0;i<l.length;i++){if(l[i].mobile===m){l[i].dispensed=true;break;}}setStoredData(l);renderAllData();alert("Dispensed Marked!");};
+// PATHOLOGY FILE / RESULT SAVE
+window.savePathRes=function(m){
+  var r = document.getElementById('pr_'+m).value.trim();
+  var fileInput = document.getElementById('pf_'+m);
+  var list = getStoredData();
+
+  function updatePathData(fileDataUri){
+    for(var i=0;i<list.length;i++){
+      if(list[i].mobile===m){
+        if(r) list[i].pathReport = r;
+        if(fileDataUri) list[i].pathFile = fileDataUri;
+        break;
+      }
+    }
+    setStoredData(list);
+    renderAllData();
+    alert("✅ Pathology Lab Report successfully upload aur save ho gayi!");
+  }
+
+  if(fileInput && fileInput.files && fileInput.files[0]){
+    var reader = new FileReader();
+    reader.onload = function(e){ updatePathData(e.target.result); };
+    reader.readAsDataURL(fileInput.files[0]);
+  } else {
+    if(!r){ alert("Kripya report likhein ya file upload karein!"); return; }
+    updatePathData(null);
+  }
+};
+
+// RADIOLOGY FILE / RESULT SAVE
+window.saveRadRes=function(m){
+  var r = document.getElementById('rr_'+m).value.trim();
+  var fileInput = document.getElementById('rf_'+m);
+  var list = getStoredData();
+
+  function updateRadData(fileDataUri){
+    for(var i=0;i<list.length;i++){
+      if(list[i].mobile===m){
+        if(r) list[i].radReport = r;
+        if(fileDataUri) list[i].radFile = fileDataUri;
+        break;
+      }
+    }
+    setStoredData(list);
+    renderAllData();
+    alert("✅ Radiology Scan Impression successfully upload aur save ho gaya!");
+  }
+
+  if(fileInput && fileInput.files && fileInput.files[0]){
+    var reader = new FileReader();
+    reader.onload = function(e){ updateRadData(e.target.result); };
+    reader.readAsDataURL(fileInput.files[0]);
+  } else {
+    if(!r){ alert("Kripya impression likhein ya X-ray upload karein!"); return; }
+    updateRadData(null);
+  }
+};
+
+window.markDispensed=function(m){
+  var l=getStoredData();
+  for(var i=0;i<l.length;i++){if(l[i].mobile===m){l[i].dispensed=true;break;}}
+  setStoredData(l);
+  renderAllData();
+  alert("✅ Medicines marked as DISPENSED (Dawa di ja chuki hai)!");
+};
 </script>
 </head>
 <body>
@@ -250,7 +370,6 @@ window.markDispensed=function(m){var l=getStoredData();for(var i=0;i<l.length;i+
         <input type="tel" id="p_mob" placeholder="Enter 10-digit Mobile..." oninput="searchPatientOnInput()">
       </div>
 
-      <!-- INSTANT HISTORY CARD AT REGISTRATION -->
       <div id="regHistoryBox" class="history-box"></div>
 
       <div class="form-group"><label>Name:</label><input type="text" id="p_name"></div>
@@ -268,14 +387,12 @@ window.markDispensed=function(m){var l=getStoredData();for(var i=0;i<l.length;i+
       <div id="msgAlert"></div>
     </div>
   </div>
-
   <!-- 2. DOCTOR -->
   <div id="tab_doc" style="display:none;">
     <div class="card">
       <h4 style="margin:0 0 8px 0;">Doctor Consultation</h4>
       <div class="form-group"><label>Select Patient:</label><select id="doc_p_select" onchange="loadDocDetails()"></select></div>
       
-      <!-- PREVIOUS VISIT HISTORY AT DOCTOR DESK -->
       <div id="prevHistoryBox" class="history-box"></div>
 
       <div class="form-group"><label>Diagnosis / Symptoms:</label><input type="text" id="doc_diag" placeholder="Fever, cough..."></div>
@@ -283,8 +400,8 @@ window.markDispensed=function(m){var l=getStoredData();for(var i=0;i<l.length;i+
       <div class="form-group"><label>Advise Radiology / Scan:</label><input type="text" id="doc_rad_t" placeholder="Chest X-Ray..."></div>
       
       <div class="form-group">
-        <label>Prescribe Medicines (Rx) - Enter dabakar alag line me likhein:</label>
-        <textarea id="doc_rx" rows="5" placeholder="1. Tab Calpal 500mg - 1 Tab TDS (3 Bar)&#10;2. Tab Pan 40 - 1 Tab Khali Pet (OD)&#10;3. Tab Montair LC - 1 Tab Raat Me (HS)&#10;4. Syp Spid Dx - 2 Chammach TDS"></textarea>
+        <label>Prescribe Medicines (Rx) - Har dawa ke baad Enter dabayein:</label>
+        <textarea id="doc_rx" rows="5" placeholder="1. Tab Calpal 500mg - TDS&#10;2. Tab Pan 40 - OD&#10;3. Tab Montair LC - HS"></textarea>
       </div>
 
       <button type="button" class="btn" onclick="saveDocRx()">Save Rx to All Departments</button>
@@ -293,12 +410,17 @@ window.markDispensed=function(m){var l=getStoredData();for(var i=0;i<l.length;i+
     </div>
   </div>
 
-  <div id="tab_path" style="display:none;"><div class="card"><h4 style="margin:0 0 8px 0;">Pathology Portal</h4><div id="pathList"></div></div></div>
+  <!-- 3. PATHOLOGY WITH RED/GREEN BADGE & FILE UPLOAD -->
+  <div id="tab_path" style="display:none;"><div class="card"><h4 style="margin:0 0 8px 0;">Pathology Lab Portal</h4><div id="pathList"></div></div></div>
+  
+  <!-- 4. RADIOLOGY WITH RED/GREEN BADGE & FILE UPLOAD -->
   <div id="tab_rad" style="display:none;"><div class="card"><h4 style="margin:0 0 8px 0;">Radiology Portal</h4><div id="radList"></div></div></div>
+  
+  <!-- 5. PHARMACY WITH RED/GREEN DISPENSED STATUS -->
   <div id="tab_pharm" style="display:none;"><div class="card"><h4 style="margin:0 0 8px 0;">Pharmacy Portal</h4><div id="pharmList"></div></div></div>
 </div>
 
-<!-- PRINTABLE PARCHA (LINE-BY-LINE MEDICINES) -->
+<!-- PRINTABLE PARCHA -->
 <div id="parchaArea">
   <div class="pr-head">
     <h2 style="margin:0;">NBS Poly Clinic</h2>
@@ -324,3 +446,4 @@ window.markDispensed=function(m){var l=getStoredData();for(var i=0;i<l.length;i+
 
 </body>
 </html>
+    
