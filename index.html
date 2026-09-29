@@ -1,24 +1,31 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NBS Poly Clinic</title>
 <style>
-*{box-sizing:border-box;font-family:sans-serif;}body{background:#f1f5f9;margin:0;padding:10px;color:#1e293b;}
+*{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;}
+body{background:#f1f5f9;margin:0;padding:10px;color:#1e293b;}
 .card{background:#fff;padding:12px;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.1);margin-bottom:10px;}
 .form-group{margin-bottom:8px;}label{display:block;font-weight:bold;font-size:12px;margin-bottom:3px;}
-input,select{width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:14px;outline:none;}
+input,select,textarea{width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:14px;outline:none;}
 .btn{background:#0284c7;color:#fff;padding:10px;border:none;border-radius:6px;font-weight:bold;width:100%;font-size:14px;cursor:pointer;margin-top:5px;}
-.nav-bar{display:flex;gap:4px;overflow-x:auto;margin-bottom:10px;}.nav-btn{flex:1;min-width:70px;padding:8px 2px;border:none;background:#e2e8f0;border-radius:4px;font-size:11px;font-weight:bold;cursor:pointer;}
+.nav-bar{display:flex;gap:4px;overflow-x:auto;margin-bottom:10px;}
+.nav-btn{flex:1;min-width:70px;padding:8px 2px;border:none;background:#e2e8f0;border-radius:4px;font-size:11px;font-weight:bold;cursor:pointer;}
 .nav-btn.active{background:#0284c7;color:#fff;}
-.grid-v{display:grid;grid-template-columns:repeat(auto-fit,minmax(70px,1fr));gap:4px;margin-bottom:6px;}
+.grid-v{display:grid;grid-template-columns:repeat(auto-fit,minmax(65px,1fr));gap:4px;margin-bottom:6px;}
 .patient-box{border:1px solid #cbd5e1;border-radius:6px;padding:8px;margin-bottom:8px;background:#fff;}
+.history-box{background:#fef3c7;border:1px solid #f59e0b;padding:10px;border-radius:6px;margin:8px 0;font-size:12px;display:none;color:#92400e;}
 #msgAlert,#docMsgAlert{display:none;padding:8px;border-radius:6px;margin-top:6px;font-weight:bold;text-align:center;font-size:12px;background:#dcfce7;color:#15803d;border:1px solid #86efac;}
-#parchaArea{display:none;background:#fff;padding:15px;color:#000;font-size:12px;}
-.pr-head{text-align:center;border-bottom:2px solid #000;padding-bottom:5px;margin-bottom:10px;}
-.pr-vitals{width:100%;border-collapse:collapse;margin:10px 0;}.pr-vitals th,.pr-vitals td{border:1px solid #000;padding:4px;text-align:center;}
-@media print{body *{visibility:hidden;}#parchaArea,#parchaArea *{visibility:visible;}#parchaArea{display:block!important;position:absolute;left:0;top:0;width:100%;margin:0;padding:10px;}}
+
+/* CLEAN OPD PRINT LAYOUT */
+#parchaArea{display:none;background:#fff;padding:20px;color:#000;font-size:13px;line-height:1.5;}
+.pr-head{text-align:center;border-bottom:2px solid #000;padding-bottom:6px;margin-bottom:12px;}
+.pr-vitals{width:100%;border-collapse:collapse;margin:10px 0;}
+.pr-vitals th,.pr-vitals td{border:1px solid #000;padding:5px;text-align:center;font-size:12px;}
+.pr-rx-box{border:1px solid #000;padding:12px;min-height:140px;white-space:pre-wrap;line-height:1.8;font-weight:bold;font-size:14px;margin-top:6px;background:#fafafa;}
+@media print{body *{visibility:hidden;}#parchaArea,#parchaArea *{visibility:visible;}#parchaArea{display:block!important;position:absolute;left:0;top:0;width:100%;margin:0;padding:15px;}}
 </style>
 <script>
 var currentRole='';
@@ -51,16 +58,66 @@ window.showPortalTab=function(t){
   }
 };
 
+// INSTANT REAL-TIME SEARCH AS USER TYPES
+window.searchPatientOnInput=function(){
+  var mob=document.getElementById('p_mob').value.trim();
+  var hBox=document.getElementById('regHistoryBox');
+  if(mob.length===10){
+    var list=getStoredData();
+    for(var i=0;i<list.length;i++){
+      if(list[i].mobile===mob){
+        var p=list[i];
+        document.getElementById('p_name').value=p.name;
+        document.getElementById('p_age').value=p.age;
+        document.getElementById('p_gender').value=p.gender;
+        
+        // Show Instant History
+        hBox.style.display='block';
+        hBox.innerHTML='<strong>⚡ Purana Record Mila: '+p.name+' ('+p.age+' Yrs / '+p.gender+')</strong><br>' +
+          '📅 Pichhli Visit: <b>'+(p.lastVisitDate||'Purana Record')+'</b><br>' +
+          '🩺 Pichhle Vitals: BP: '+(p.bp||'-')+', Sugar: '+(p.sugar||'-')+', Pulse: '+(p.pulse||'-')+'<br>' +
+          '📝 Pichhla Diagnosis: '+(p.diagnosis||'None')+'<br>' +
+          '💊 Pichhli Dawaiyan: <div style="white-space:pre-wrap;font-weight:bold;color:#78350f;margin-top:2px;">'+(p.medicines||'None')+'</div>';
+        return;
+      }
+    }
+  }
+  hBox.style.display='none';
+};
+
 window.savePatientDirect=function(){
   var mob=document.getElementById('p_mob').value.trim();var nm=document.getElementById('p_name').value.trim();var ag=document.getElementById('p_age').value.trim();
   if(!mob||!nm||!ag){alert("Mobile, Name aur Age bharein!");return;}
-  var pt={mobile:mob,name:nm,age:ag,gender:document.getElementById('p_gender').value,bp:document.getElementById('p_bp').value||"-",sugar:document.getElementById('p_sugar').value||"-",spo2:document.getElementById('p_spo2').value||"-",pulse:document.getElementById('p_pulse').value||"-",weight:document.getElementById('p_weight').value||"-",diagnosis:"",pathTests:"",pathReport:"",radTests:"",radReport:"",medicines:"",dispensed:false};
-  var list=getStoredData();var ex=false;
-  for(var i=0;i<list.length;i++){if(list[i].mobile===mob){list[i]=pt;ex=true;break;}}
-  if(!ex)list.push(pt);
+  
+  var list=getStoredData();var oldPt=null;var idx=-1;
+  for(var i=0;i<list.length;i++){if(list[i].mobile===mob){oldPt=list[i];idx=i;break;}}
+
+  var pt={
+    mobile:mob,name:nm,age:ag,gender:document.getElementById('p_gender').value,
+    bp:document.getElementById('p_bp').value||"-",sugar:document.getElementById('p_sugar').value||"-",
+    spo2:document.getElementById('p_spo2').value||"-",pulse:document.getElementById('p_pulse').value||"-",
+    weight:document.getElementById('p_weight').value||"-",
+    lastVisitDate:new Date().toLocaleDateString('en-IN'),
+    diagnosis:oldPt?oldPt.diagnosis:"",
+    pathTests:oldPt?oldPt.pathTests:"",
+    pathReport:oldPt?oldPt.pathReport:"",
+    radTests:oldPt?oldPt.radTests:"",
+    radReport:oldPt?oldPt.radReport:"",
+    medicines:oldPt?oldPt.medicines:"",
+    dispensed:false,
+    prevHistory:oldPt?{diag:oldPt.diagnosis,rx:oldPt.medicines,date:oldPt.lastVisitDate,bp:oldPt.bp,sugar:oldPt.sugar}:null
+  };
+
+  if(idx>=0) list[idx]=pt; else list.push(pt);
   setStoredData(list);
+  
   document.getElementById('p_mob').value='';document.getElementById('p_name').value='';document.getElementById('p_age').value='';
-  var a=document.getElementById('msgAlert');a.style.display='block';a.innerText='✅ Patient Register Ho Gaya!';setTimeout(function(){a.style.display='none';},2500);
+  document.getElementById('p_bp').value='';document.getElementById('p_sugar').value='';document.getElementById('p_spo2').value='';
+  document.getElementById('p_pulse').value='';document.getElementById('p_weight').value='';
+  document.getElementById('regHistoryBox').style.display='none';
+  
+  var a=document.getElementById('msgAlert');a.style.display='block';a.innerText=oldPt?'✅ Purana Patient Nayi Visit ke Liye Update Ho Gaya!':'✅ Naya Patient Register Ho Gaya!';
+  setTimeout(function(){a.style.display='none';},2500);
   renderAllData();
 };
 
@@ -70,9 +127,9 @@ window.renderAllData=function(){
   var pHtml='',rHtml='',mHtml='';
   for(var i=0;i<list.length;i++){
     var p=list[i];dSel.innerHTML+='<option value="'+p.mobile+'">'+p.name+' ('+p.mobile+')</option>';
-    pHtml+='<div class="patient-box"><strong>'+p.name+'</strong> ('+p.mobile+')<br><span style="color:#d97706;">Tests: '+(p.pathTests||'None')+'</span><br>'+(p.pathReport?'Report: '+p.pathReport+'<br>':'')+'<input type="text" id="pr_'+p.mobile+'" placeholder="Result..." style="margin:4px 0;"><button class="btn" style="padding:4px;background:#d97706;" onclick="savePathRes(\''+p.mobile+'\')">Save Lab Report</button></div>';
-    rHtml+='<div class="patient-box"><strong>'+p.name+'</strong> ('+p.mobile+')<br><span style="color:#8b5cf6;">Scan: '+(p.radTests||'None')+'</span><br>'+(p.radReport?'Impression: '+p.radReport+'<br>':'')+'<input type="text" id="rr_'+p.mobile+'" placeholder="Scan result..." style="margin:4px 0;"><button class="btn" style="padding:4px;background:#8b5cf6;" onclick="saveRadRes(\''+p.mobile+'\')">Save Scan Report</button></div>';
-    mHtml+='<div class="patient-box"><strong>'+p.name+'</strong> ('+p.mobile+')<br><span style="color:#0284c7;">Rx: '+(p.medicines||'None')+'</span><br>Status: '+(p.dispensed?'Dispensed':'Pending')+'<button class="btn" style="padding:4px;background:#10b981;margin-top:4px;" onclick="markDispensed(\''+p.mobile+'\')">Mark Dispensed</button></div>';
+    pHtml+='<div class="patient-box"><strong>'+p.name+'</strong> ('+p.mobile+')<br><span style="color:#d97706;">Advised: '+(p.pathTests||'None')+'</span><br>'+(p.pathReport?'Report: '+p.pathReport+'<br>':'')+'<input type="text" id="pr_'+p.mobile+'" placeholder="Result..." style="margin:4px 0;"><button class="btn" style="padding:4px;background:#d97706;" onclick="savePathRes(\''+p.mobile+'\')">Save Lab Report</button></div>';
+    rHtml+='<div class="patient-box"><strong>'+p.name+'</strong> ('+p.mobile+')<br><span style="color:#8b5cf6;">Advised: '+(p.radTests||'None')+'</span><br>'+(p.radReport?'Impression: '+p.radReport+'<br>':'')+'<input type="text" id="rr_'+p.mobile+'" placeholder="Scan result..." style="margin:4px 0;"><button class="btn" style="padding:4px;background:#8b5cf6;" onclick="saveRadRes(\''+p.mobile+'\')">Save Scan Report</button></div>';
+    mHtml+='<div class="patient-box"><strong>'+p.name+'</strong> ('+p.mobile+')<br><div style="color:#0284c7;white-space:pre-wrap;font-weight:bold;margin:4px 0;">Rx:<br>'+(p.medicines||'None')+'</div>Status: '+(p.dispensed?'Dispensed':'Pending')+'<button class="btn" style="padding:4px;background:#10b981;margin-top:4px;" onclick="markDispensed(\''+p.mobile+'\')">Mark Dispensed</button></div>';
   }
   if(cVal)dSel.value=cVal;
   document.getElementById('pathList').innerHTML=pHtml||'Koi patient nahi hai.';
@@ -81,16 +138,41 @@ window.renderAllData=function(){
 };
 
 window.loadDocDetails=function(){
-  var m=document.getElementById('doc_p_select').value;var list=getStoredData();
-  for(var i=0;i<list.length;i++){if(list[i].mobile===m){document.getElementById('doc_diag').value=list[i].diagnosis||"";document.getElementById('doc_path_t').value=list[i].pathTests||"";document.getElementById('doc_rad_t').value=list[i].radTests||"";document.getElementById('doc_rx').value=list[i].medicines||"";break;}}
+  var m=document.getElementById('doc_p_select').value;var list=getStoredData();var p=null;
+  for(var i=0;i<list.length;i++){if(list[i].mobile===m){p=list[i];break;}}
+  if(!p)return;
+
+  document.getElementById('doc_diag').value=p.diagnosis||"";
+  document.getElementById('doc_path_t').value=p.pathTests||"";
+  document.getElementById('doc_rad_t').value=p.radTests||"";
+  document.getElementById('doc_rx').value=p.medicines||"";
+
+  var hBox=document.getElementById('prevHistoryBox');
+  if(p.prevHistory && (p.prevHistory.rx || p.prevHistory.diag)){
+    hBox.style.display='block';
+    hBox.innerHTML='<strong>📋 Pichhli Visit Record ('+(p.prevHistory.date||'Earlier')+'):</strong><br>' +
+      'Pichhla Diagnosis: <b>'+(p.prevHistory.diag||'None')+'</b><br>' +
+      'Pichhli Dawaiyan:<div style="white-space:pre-wrap;color:#78350f;font-weight:bold;margin-top:3px;">'+(p.prevHistory.rx||'None')+'</div>';
+  } else {
+    hBox.style.display='none';
+  }
 };
 
 window.saveDocRx=function(){
   var m=document.getElementById('doc_p_select').value;if(!m){alert("Patient chunein!");return;}
   var list=getStoredData();
-  for(var i=0;i<list.length;i++){if(list[i].mobile===m){list[i].diagnosis=document.getElementById('doc_diag').value;list[i].pathTests=document.getElementById('doc_path_t').value;list[i].radTests=document.getElementById('doc_rad_t').value;list[i].medicines=document.getElementById('doc_rx').value;break;}}
+  for(var i=0;i<list.length;i++){
+    if(list[i].mobile===m){
+      list[i].diagnosis=document.getElementById('doc_diag').value;
+      list[i].pathTests=document.getElementById('doc_path_t').value;
+      list[i].radTests=document.getElementById('doc_rad_t').value;
+      list[i].medicines=document.getElementById('doc_rx').value;
+      list[i].lastVisitDate=new Date().toLocaleDateString('en-IN');
+      break;
+    }
+  }
   setStoredData(list);renderAllData();
-  var a=document.getElementById('docMsgAlert');a.style.display='block';a.innerText='✅ Doctor Advice Saved!';setTimeout(function(){a.style.display='none';},2500);
+  var a=document.getElementById('docMsgAlert');a.style.display='block';a.innerText='✅ Doctor Advice & Medicines Saved!';setTimeout(function(){a.style.display='none';},2500);
   alert("Doctor Advice successfully save ho gayi!");
 };
 
@@ -99,12 +181,26 @@ window.printOPDParcha=function(){
   var list=getStoredData(),p=null;
   for(var i=0;i<list.length;i++){if(list[i].mobile===m){p=list[i];break;}}
   if(!p)return;
-  document.getElementById('pr_name').innerText=p.name;document.getElementById('pr_info').innerText=p.age+' Yrs / '+p.gender+' | Mob: '+p.mobile+' | Date: '+new Date().toLocaleDateString('en-IN');
-  document.getElementById('pr_bp').innerText=p.bp;document.getElementById('pr_sugar').innerText=p.sugar;document.getElementById('pr_spo2').innerText=p.spo2;document.getElementById('pr_pulse').innerText=p.pulse;document.getElementById('pr_weight').innerText=p.weight;
+
+  document.getElementById('pr_name').innerText=p.name;
+  document.getElementById('pr_info').innerText=p.age+' Yrs / '+p.gender+' | Mob: '+p.mobile+' | Date: '+(p.lastVisitDate||new Date().toLocaleDateString('en-IN'));
+  document.getElementById('pr_bp').innerText=p.bp;document.getElementById('pr_sugar').innerText=p.sugar;document.getElementById('pr_spo2').innerText=p.spo2;
+  document.getElementById('pr_pulse').innerText=p.pulse;document.getElementById('pr_weight').innerText=p.weight;
+  
   document.getElementById('pr_diag').innerText=document.getElementById('doc_diag').value||"None";
   document.getElementById('pr_path').innerText=document.getElementById('doc_path_t').value||"None";
   document.getElementById('pr_rad').innerText=document.getElementById('doc_rad_t').value||"None";
-  document.getElementById('pr_rx').innerText=document.getElementById('doc_rx').value||"None";
+  
+  var rawMeds=document.getElementById('doc_rx').value.trim();
+  if(!rawMeds){
+    document.getElementById('pr_rx').innerText="None Prescribed";
+  } else {
+    var formattedLines = rawMeds.split('\n').map(function(line){
+      return line.trim();
+    }).filter(function(line){ return line.length > 0; }).join('\n');
+    document.getElementById('pr_rx').innerText = formattedLines;
+  }
+
   window.print();
 };
 
@@ -145,10 +241,18 @@ window.markDispensed=function(m){var l=getStoredData();for(var i=0;i<l.length;i+
     <button class="nav-btn" id="nb_pharm" onclick="showPortalTab('pharm')">5. Pharmacy</button>
   </div>
 
+  <!-- 1. REGISTRATION -->
   <div id="tab_reg" style="display:none;">
     <div class="card">
-      <h4 style="margin:0 0 8px 0;">Patient Registration</h4>
-      <div class="form-group"><label>Mobile:</label><input type="tel" id="p_mob"></div>
+      <h4 style="margin:0 0 8px 0;">Patient Registration & Check-in</h4>
+      <div class="form-group">
+        <label>Mobile Number (10 digit daalte hi purani history khul jayegi):</label>
+        <input type="tel" id="p_mob" placeholder="Enter 10-digit Mobile..." oninput="searchPatientOnInput()">
+      </div>
+
+      <!-- INSTANT HISTORY CARD AT REGISTRATION -->
+      <div id="regHistoryBox" class="history-box"></div>
+
       <div class="form-group"><label>Name:</label><input type="text" id="p_name"></div>
       <div class="form-group"><label>Age & Gender:</label>
         <div style="display:flex;gap:6px;"><input type="number" id="p_age" placeholder="Age" style="width:50%;"><select id="p_gender" style="width:50%;"><option value="Male">Male</option><option value="Female">Female</option></select></div>
@@ -160,19 +264,29 @@ window.markDispensed=function(m){var l=getStoredData();for(var i=0;i<l.length;i+
         <div><label>Pulse:</label><input type="text" id="p_pulse" placeholder="72"></div>
         <div><label>Weight:</label><input type="text" id="p_weight" placeholder="65"></div>
       </div>
-      <button type="button" class="btn" onclick="savePatientDirect()">Register Patient</button>
+      <button type="button" class="btn" onclick="savePatientDirect()">Register / Update Patient</button>
       <div id="msgAlert"></div>
     </div>
   </div>
 
+  <!-- 2. DOCTOR -->
   <div id="tab_doc" style="display:none;">
     <div class="card">
       <h4 style="margin:0 0 8px 0;">Doctor Consultation</h4>
       <div class="form-group"><label>Select Patient:</label><select id="doc_p_select" onchange="loadDocDetails()"></select></div>
-      <div class="form-group"><label>Diagnosis:</label><input type="text" id="doc_diag" placeholder="Fever, cough..."></div>
-      <div class="form-group"><label>Advise Pathology:</label><input type="text" id="doc_path_t" placeholder="CBC, Sugar..."></div>
-      <div class="form-group"><label>Advise Radiology:</label><input type="text" id="doc_rad_t" placeholder="Chest X-Ray..."></div>
-      <div class="form-group"><label>Prescribe Medicines (Rx):</label><input type="text" id="doc_rx" placeholder="Medicines..."></div>
+      
+      <!-- PREVIOUS VISIT HISTORY AT DOCTOR DESK -->
+      <div id="prevHistoryBox" class="history-box"></div>
+
+      <div class="form-group"><label>Diagnosis / Symptoms:</label><input type="text" id="doc_diag" placeholder="Fever, cough..."></div>
+      <div class="form-group"><label>Advise Pathology Tests:</label><input type="text" id="doc_path_t" placeholder="CBC, ESR, CRP..."></div>
+      <div class="form-group"><label>Advise Radiology / Scan:</label><input type="text" id="doc_rad_t" placeholder="Chest X-Ray..."></div>
+      
+      <div class="form-group">
+        <label>Prescribe Medicines (Rx) - Enter dabakar alag line me likhein:</label>
+        <textarea id="doc_rx" rows="5" placeholder="1. Tab Calpal 500mg - 1 Tab TDS (3 Bar)&#10;2. Tab Pan 40 - 1 Tab Khali Pet (OD)&#10;3. Tab Montair LC - 1 Tab Raat Me (HS)&#10;4. Syp Spid Dx - 2 Chammach TDS"></textarea>
+      </div>
+
       <button type="button" class="btn" onclick="saveDocRx()">Save Rx to All Departments</button>
       <div id="docMsgAlert"></div>
       <button type="button" class="btn" style="background:#475569;" onclick="printOPDParcha()">🖨️ Print Prescription / Parcha</button>
@@ -184,11 +298,12 @@ window.markDispensed=function(m){var l=getStoredData();for(var i=0;i<l.length;i+
   <div id="tab_pharm" style="display:none;"><div class="card"><h4 style="margin:0 0 8px 0;">Pharmacy Portal</h4><div id="pharmList"></div></div></div>
 </div>
 
+<!-- PRINTABLE PARCHA (LINE-BY-LINE MEDICINES) -->
 <div id="parchaArea">
   <div class="pr-head">
     <h2 style="margin:0;">NBS Poly Clinic</h2>
     <p style="margin:2px 0;">Sadhanganj Sewaith Road, Soraon, Prayagraj</p>
-    <p style="margin:2px 0;font-size:11px;" id="pr_info">-</p>
+    <p style="margin:2px 0;font-size:12px;" id="pr_info">-</p>
   </div>
   <h3 id="pr_name" style="margin:5px 0;">-</h3>
   <table class="pr-vitals">
@@ -197,11 +312,13 @@ window.markDispensed=function(m){var l=getStoredData();for(var i=0;i<l.length;i+
   </table>
   <p><strong>Diagnosis:</strong> <span id="pr_diag">-</span></p>
   <p><strong>Pathology:</strong> <span id="pr_path">-</span> | <strong>Radiology:</strong> <span id="pr_rad">-</span></p>
-  <p><strong>Rx (Medicines):</strong></p>
-  <div id="pr_rx" style="font-weight:bold;font-size:14px;padding:8px;border:1px dashed #666;min-height:60px;">-</div>
-  <div style="margin-top:40px;display:flex;justify-content:space-between;">
-    <span>*Dawa samay par lein.</span>
-    <span style="border-top:1px solid #000;width:140px;text-align:center;">Doctor Signature</span>
+  
+  <p style="margin-bottom:2px;"><strong>Rx (Prescribed Medicines):</strong></p>
+  <div id="pr_rx" class="pr-rx-box">-</div>
+  
+  <div style="margin-top:35px;display:flex;justify-content:space-between;">
+    <span>*Dawa samay par lein. Dobara aate waqt ye parcha sath layein.</span>
+    <span style="border-top:1px solid #000;width:150px;text-align:center;padding-top:4px;">Doctor Signature</span>
   </div>
 </div>
 
