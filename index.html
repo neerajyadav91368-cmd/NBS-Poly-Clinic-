@@ -5,10 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NBS Poly Clinic Management System</title>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
   <style>
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
     body { background-color: #f1f5f9; margin: 0; padding: 12px; color: #1e293b; }
@@ -33,7 +29,6 @@
     .grid-vitals { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; margin-bottom: 10px; }
 
     .btn { background: #0284c7; color: white; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; font-size: 15px; margin-top: 6px; }
-    .btn:active { opacity: 0.8; }
     .btn-print { background: #475569; }
     .btn-green { background: #10b981; }
     .btn-purple { background: #8b5cf6; }
@@ -73,56 +68,6 @@
       #printableParcha { display: block !important; position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 20px; }
     }
   </style>
-
-  <script>
-    var PASSWORDS = { reg: "1111", doc: "2222", path: "3333", rad: "4444", pharm: "5555" };
-    var currentRole = null;
-
-    function handleLoginAction() {
-      var dept = document.getElementById('login_dept').value;
-      var pass = document.getElementById('login_password').value.trim();
-
-      if (PASSWORDS[dept] === pass) {
-        currentRole = dept;
-        document.getElementById('authSection').style.display = 'none';
-        document.getElementById('mainAppSection').style.display = 'block';
-
-        var labels = {
-          reg: "Registration Reception",
-          doc: "Doctor Consultation",
-          path: "Pathology Lab",
-          rad: "Radiology Portal",
-          pharm: "Pharmacy Portal"
-        };
-
-        document.getElementById('currentDeptLabel').innerText = labels[dept];
-        showPortalTab(dept);
-      } else {
-        alert("Galat PIN! Sahi PIN dalein (Registration: 1111)");
-      }
-    }
-
-    function handleLogoutAction() {
-      currentRole = null;
-      document.getElementById('login_password').value = "";
-      document.getElementById('mainAppSection').style.display = 'none';
-      document.getElementById('authSection').style.display = 'block';
-    }
-
-    function showPortalTab(tabId) {
-      var tabs = ['reg', 'doc', 'path', 'rad', 'pharm'];
-      for (var i = 0; i < tabs.length; i++) {
-        var t = tabs[i];
-        var sec = document.getElementById('section_' + t);
-        var btn = document.getElementById('btn_' + t);
-        if (sec) sec.style.display = (t === tabId) ? 'block' : 'none';
-        if (btn) {
-          if (t === tabId) btn.classList.add('active');
-          else btn.classList.remove('active');
-        }
-      }
-    }
-  </script>
 </head>
 <body>
 
@@ -203,7 +148,7 @@
           <div><label>Weight (kg):</label><input type="text" id="reg_weight" placeholder="65"></div>
         </div>
 
-        <button class="btn" type="button" id="regBtn" onclick="savePatientNow()">Register Patient</button>
+        <button class="btn" type="button" onclick="savePatientNow()">Register Patient</button>
         <div id="statusAlert"></div>
       </div>
     </div>
@@ -343,13 +288,60 @@
   </div>
 
   <script>
-    var db = null;
+    var PASSWORDS = { reg: "1111", doc: "2222", path: "3333", rad: "4444", pharm: "5555" };
+    var currentRole = null;
     var cachedPatients = [];
 
-    // Local Storage Data Access
+    // 1. AUTHENTICATION
+    function handleLoginAction() {
+      var dept = document.getElementById('login_dept').value;
+      var pass = document.getElementById('login_password').value.trim();
+
+      if (PASSWORDS[dept] === pass) {
+        currentRole = dept;
+        document.getElementById('authSection').style.display = 'none';
+        document.getElementById('mainAppSection').style.display = 'block';
+
+        var labels = {
+          reg: "Registration Reception",
+          doc: "Doctor Consultation",
+          path: "Pathology Lab",
+          rad: "Radiology Portal",
+          pharm: "Pharmacy Portal"
+        };
+
+        document.getElementById('currentDeptLabel').innerText = labels[dept];
+        showPortalTab(dept);
+      } else {
+        alert("Galat PIN! Sahi PIN dalein (Registration: 1111)");
+      }
+    }
+
+    function handleLogoutAction() {
+      currentRole = null;
+      document.getElementById('login_password').value = "";
+      document.getElementById('mainAppSection').style.display = 'none';
+      document.getElementById('authSection').style.display = 'block';
+    }
+
+    function showPortalTab(tabId) {
+      var tabs = ['reg', 'doc', 'path', 'rad', 'pharm'];
+      for (var i = 0; i < tabs.length; i++) {
+        var t = tabs[i];
+        var sec = document.getElementById('section_' + t);
+        var btn = document.getElementById('btn_' + t);
+        if (sec) sec.style.display = (t === tabId) ? 'block' : 'none';
+        if (btn) {
+          if (t === tabId) btn.classList.add('active');
+          else btn.classList.remove('active');
+        }
+      }
+    }
+
+    // 2. DATA STORAGE
     function loadSavedPatients() {
       try {
-        var str = localStorage.getItem('clinic_store_final_v5');
+        var str = localStorage.getItem('clinic_clean_db_v1');
         return str ? JSON.parse(str) : [];
       } catch (e) {
         return [];
@@ -358,11 +350,11 @@
 
     function saveToLocalStorage(data) {
       try {
-        localStorage.setItem('clinic_store_final_v5', JSON.stringify(data));
+        localStorage.setItem('clinic_clean_db_v1', JSON.stringify(data));
       } catch (e) {}
     }
 
-    // Refresh All Department Views
+    // 3. UI REFRESH
     function refreshUI(patients) {
       cachedPatients = patients || [];
       var docSelect = document.getElementById('doc_patient_select');
@@ -405,4 +397,6 @@
         var medsText = p.medicines ? p.medicines : '<span style="color:#94a3b8; font-style:italic;">No Medicines Prescribed</span>';
         pharmHtml += '<div class="patient-card">' +
           '<div class="patient-header"><div><span class="patient-name">' + p.name + '</span> (' + p.gender + ', ' + p.age + ' yrs)<div class="patient-meta">Mob: ' + p.mobile + '</div></div>' +
-          '<span class="badge ' + (p.pharmacyStatus === 'Dispensed' ? 'badge-done' : 'badge-pending') + '">' + (p.pharmacyStatus || 'Pending') +
+          '<span class="badge ' + (p.pharmacyStatus === 'Dispensed' ? 'badge-done' : 'badge-pending') + '">' + (p.pharmacyStatus || 'Pending') + '</span></div>' +
+          '<div class="readonly-box"><p><strong>Doctor Prescription:</strong> <span style="color:#0284c7; font-weight:bold;">' + medsText + '</span></p></div>' +
+          '<div class="action-box"><button class="btn btn-green" type="button" onclick="dispenseMed(\'' + p.mobile + '\')">Mark 
