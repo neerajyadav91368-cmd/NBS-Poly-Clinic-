@@ -47,34 +47,34 @@
     <h1>NBS Poly Clinic Portal</h1>
   </div>
 
-  <!-- 1. LOGIN SCREEN (NO PINs IN DROPDOWN) -->
+  <!-- 1. SECURE LOGIN SCREEN -->
   <div id="loginScreen" class="card" style="max-width: 380px; margin: 20px auto;">
-    <h3 style="text-align:center; margin-top:0;">Staff Login</h3>
+    <h3 style="text-align:center; margin-top:0;">Staff Secure Login</h3>
     
     <div class="form-group">
       <label>Department:</label>
       <select id="user_dept">
-        <option value="reg">1. Registration Reception</option>
-        <option value="doc">2. Doctor Consultation</option>
-        <option value="path">3. Pathology Lab</option>
-        <option value="rad">4. Radiology / X-Ray</option>
-        <option value="pharm">5. Pharmacy</option>
+        <option value="1111">1. Registration Reception</option>
+        <option value="2222">2. Doctor Consultation</option>
+        <option value="3333">3. Pathology Lab</option>
+        <option value="4444">4. Radiology / X-Ray</option>
+        <option value="5555">5. Pharmacy</option>
       </select>
     </div>
 
     <div class="form-group">
-      <label>Enter Secret PIN:</label>
-      <input type="password" id="user_pin" placeholder="Enter PIN" onkeydown="if(event.key==='Enter') startLogin()">
+      <label>Secret Password / PIN:</label>
+      <input type="password" id="user_pin" placeholder="Enter PIN" onkeydown="if(event.key==='Enter') executeLogin()">
     </div>
 
-    <button type="button" class="btn" onclick="startLogin()">Login Karein</button>
+    <button type="button" class="btn" onclick="executeLogin()">Login Karein</button>
   </div>
 
   <!-- 2. MAIN APP SCREEN -->
   <div id="portalScreen" style="display: none;">
     <div style="display:flex; justify-content:space-between; align-items:center; background:#e0f2fe; padding:8px 12px; border-radius:6px; margin-bottom:10px;">
       <span style="font-size:13px; font-weight:bold; color:#0369a1;" id="activeRoleText">-</span>
-      <button onclick="startLogout()" style="background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;">Logout</button>
+      <button onclick="executeLogout()" style="background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;">Logout</button>
     </div>
 
     <div class="nav-bar">
@@ -180,7 +180,7 @@
 
   </div>
 
-  <!-- 3. DEDICATED OPD PARCHA FOR PRINTING -->
+  <!-- 3. PRINTABLE OPD PARCHA -->
   <div id="parchaArea">
     <div class="pr-header">
       <h2>NBS Poly Clinic</h2>
@@ -243,43 +243,36 @@
   </div>
 
   <script>
-    // SECRET PASSWORDS (Sirf Staff Ko Pata Honge)
-    var PASSWORDS = {
-      'reg': '1111',
-      'doc': '2222',
-      'path': '3333',
-      'rad': '4444',
-      'pharm': '5555'
-    };
-
     var currentRole = '';
 
-    function startLogin() {
-      var dept = document.getElementById('user_dept').value;
-      var pass = document.getElementById('user_pin').value.trim();
+    // DIRECT & GUARANTEED LOGIN
+    function executeLogin() {
+      var correctPin = document.getElementById('user_dept').value;
+      var inputPin = document.getElementById('user_pin').value.trim();
 
-      if (PASSWORDS[dept] === pass) {
-        currentRole = dept;
+      if (inputPin === correctPin) {
+        currentRole = inputPin;
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('portalScreen').style.display = 'block';
 
         var roleNames = {
-          'reg': 'Registration Reception',
-          'doc': 'Doctor Consultation',
-          'path': 'Pathology Lab',
-          'rad': 'Radiology Portal',
-          'pharm': 'Pharmacy Portal'
+          '1111': 'Registration Reception',
+          '2222': 'Doctor Consultation',
+          '3333': 'Pathology Lab',
+          '4444': 'Radiology Portal',
+          '5555': 'Pharmacy Portal'
         };
         document.getElementById('activeRoleText').innerText = roleNames[currentRole];
 
-        showPortalTab(currentRole);
+        var tabMap = { '1111': 'reg', '2222': 'doc', '3333': 'path', '4444': 'rad', '5555': 'pharm' };
+        showPortalTab(tabMap[currentRole]);
         renderAllData();
       } else {
-        alert("Galat Password / PIN! Kripya sahi PIN enter karein.");
+        alert("Galat Password / PIN! Kripya sahi PIN dalein.");
       }
     }
 
-    function startLogout() {
+    function executeLogout() {
       currentRole = '';
       document.getElementById('user_pin').value = '';
       document.getElementById('portalScreen').style.display = 'none';
@@ -301,14 +294,14 @@
 
     function getStoredData() {
       try {
-        var d = localStorage.getItem('nbs_live_store');
+        var d = localStorage.getItem('nbs_live_store_v10');
         return d ? JSON.parse(d) : [];
       } catch(e) { return []; }
     }
 
     function setStoredData(arr) {
       try {
-        localStorage.setItem('nbs_live_store', JSON.stringify(arr));
+        localStorage.setItem('nbs_live_store_v10', JSON.stringify(arr));
       } catch(e) {}
     }
 
@@ -468,4 +461,5 @@
         if (list[i].mobile === mob) { p = list[i]; break; }
       }
 
-      if (
+      if (!p) {
+        alert("Patient da
