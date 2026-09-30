@@ -11,6 +11,7 @@ body{background:#f1f5f9;margin:0;padding:10px;color:#1e293b;}
 .form-group{margin-bottom:8px;}label{display:block;font-weight:bold;font-size:12px;margin-bottom:3px;}
 input,select,textarea{width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:14px;outline:none;}
 .btn{background:#0284c7;color:#fff;padding:10px;border:none;border-radius:6px;font-weight:bold;width:100%;font-size:14px;cursor:pointer;margin-top:5px;}
+.btn-wa{background:#22c55e;color:#fff;padding:10px;border:none;border-radius:6px;font-weight:bold;width:100%;font-size:13px;cursor:pointer;margin-top:6px;text-align:center;text-decoration:none;display:inline-block;}
 .nav-bar{display:flex;gap:4px;overflow-x:auto;margin-bottom:10px;}
 .nav-btn{flex:1;min-width:70px;padding:8px 2px;border:none;background:#e2e8f0;border-radius:4px;font-size:11px;font-weight:bold;cursor:pointer;}
 .nav-btn.active{background:#0284c7;color:#fff;}
@@ -65,14 +66,13 @@ function saveToCloud(patientObj, callback) {
   });
 }
 
-// HAR 3 SECOND ME DATA AUTO-SYNC HOGA SABHI PHONES ME
+// HAR 3 SECOND ME DATA AUTO-SYNC
 setInterval(function(){
   if(currentRole) {
     syncFromCloud();
   }
 }, 3000);
-
-window.executeLogin=function(){
+  window.executeLogin=function(){
   var correctPin=document.getElementById('user_dept').value;
   var inputPin=document.getElementById('user_pin').value.trim();
   if(inputPin===correctPin){
@@ -106,6 +106,10 @@ window.searchPatientOnInput=function(){
     document.getElementById('p_name').value=p.name;
     document.getElementById('p_age').value=p.age;
     document.getElementById('p_gender').value=p.gender;
+    if(p.appDate) document.getElementById('p_date').value=p.appDate;
+    if(p.appTime) document.getElementById('p_time').value=p.appTime;
+    if(p.appFee) document.getElementById('p_fee').value=p.appFee;
+
     hBox.style.display='block';
     hBox.innerHTML='<strong>⚡ Purana Record Mila: '+p.name+' ('+p.age+' Yrs / '+p.gender+')</strong><br>' +
       '📅 Pichhli Visit: <b>'+(p.lastVisitDate||'Purana Record')+'</b><br>' +
@@ -118,33 +122,62 @@ window.searchPatientOnInput=function(){
 };
 
 window.savePatientDirect=function(){
-  var mob=document.getElementById('p_mob').value.trim();var nm=document.getElementById('p_name').value.trim();var ag=document.getElementById('p_age').value.trim();
+  var mob=document.getElementById('p_mob').value.trim();
+  var nm=document.getElementById('p_name').value.trim();
+  var ag=document.getElementById('p_age').value.trim();
+  var dt=document.getElementById('p_date').value;
+  var tm=document.getElementById('p_time').value;
+  var fee=document.getElementById('p_fee').value.trim() || "0";
+
   if(!mob||!nm||!ag){alert("Mobile, Name aur Age bharein!");return;}
   
   var oldPt = livePatients[mob] || null;
   var pt={
-    mobile:mob,name:nm,age:ag,gender:document.getElementById('p_gender').value,
-    bp:document.getElementById('p_bp').value||"-",sugar:document.getElementById('p_sugar').value||"-",
-    spo2:document.getElementById('p_spo2').value||"-",pulse:document.getElementById('p_pulse').value||"-",
+    mobile:mob,
+    name:nm,
+    age:ag,
+    gender:document.getElementById('p_gender').value,
+    appDate:dt,
+    appTime:tm,
+    appFee:fee,
+    bp:document.getElementById('p_bp').value||"-",
+    sugar:document.getElementById('p_sugar').value||"-",
+    spo2:document.getElementById('p_spo2').value||"-",
+    pulse:document.getElementById('p_pulse').value||"-",
     weight:document.getElementById('p_weight').value||"-",
-    lastVisitDate:new Date().toLocaleDateString('en-IN'),
+    lastVisitDate:dt || new Date().toLocaleDateString('en-IN'),
     diagnosis:oldPt?oldPt.diagnosis:"",
     pathTests:oldPt?oldPt.pathTests:"",
     pathReport:oldPt?oldPt.pathReport:"",
+    pathFile:oldPt?oldPt.pathFile:"",
+    pathBillFile:oldPt?oldPt.pathBillFile:"",
     radTests:oldPt?oldPt.radTests:"",
     radReport:oldPt?oldPt.radReport:"",
+    radFile:oldPt?oldPt.radFile:"",
+    radBillFile:oldPt?oldPt.radBillFile:"",
     medicines:oldPt?oldPt.medicines:"",
+    pharmBillAmount:oldPt?oldPt.pharmBillAmount:"",
+    pharmBillFile:oldPt?oldPt.pharmBillFile:"",
     dispensed:false,
     prevHistory:oldPt?{diag:oldPt.diagnosis,rx:oldPt.medicines,date:oldPt.lastVisitDate}:null
   };
 
   saveToCloud(pt, function(){
-    document.getElementById('p_mob').value='';document.getElementById('p_name').value='';document.getElementById('p_age').value='';
-    document.getElementById('p_bp').value='';document.getElementById('p_sugar').value='';document.getElementById('p_spo2').value='';
-    document.getElementById('p_pulse').value='';document.getElementById('p_weight').value='';
-    document.getElementById('regHistoryBox').style.display='none';
-    var a=document.getElementById('msgAlert');a.style.display='block';a.innerText=oldPt?'✅ Purana Patient Nayi Visit ke Liye Update Ho Gaya!':'✅ Naya Patient Register Ho Gaya!';
-    setTimeout(function(){a.style.display='none';},2500);
+    // Setup WhatsApp Confirmation link
+    var waText = "Namaste "+nm+", aapka registration NBS Poly Clinic me safalta-purvak ho gaya hai.\n" +
+                 "📅 Appointment Date: "+(dt || "Today")+"\n" +
+                 "⏰ Time: "+(tm || "Consultation Hours")+"\n" +
+                 "💰 Consultation Fee: Rs. "+fee+"\n" +
+                 "Pate: Sadhanganj Sewaith Road, Soraon, Prayagraj. Kripya samay par pahunchein!";
+    var waUrl = "https://wa.me/91" + mob + "?text=" + encodeURIComponent(waText);
+    
+    var waBtn = document.getElementById('waSendBtn');
+    waBtn.href = waUrl;
+    waBtn.style.display = 'block';
+
+    var a=document.getElementById('msgAlert');
+    a.style.display='block';
+    a.innerText=oldPt?'✅ Patient Nayi Appointment ke Sath Update Ho Gaya!':'✅ Naya Patient Register Ho Gaya!';
   });
 };
 
@@ -156,130 +189,119 @@ window.renderAllData=function(){
   var keys = Object.keys(livePatients);
   for(var i=0;i<keys.length;i++){
     var p = livePatients[keys[i]];
-    dSel.innerHTML+='<option value="'+p.mobile+'">'+p.name+' ('+p.mobile+')</option>';
-    // 1. PATHOLOGY
-    var isPathDone = !!(p.pathReport);
+    dSel.innerHTML+='<option value="'+p.mobile+'">'+p.name+' ('+p.mobile+') - '+ (p.appTime||'') +'</option>';
+    
+    // 1. PATHOLOGY PORTAL
+    var isPathDone = !!(p.pathReport || p.pathFile);
     var pBadge = p.pathTests ? (isPathDone ? '<span class="badge-done">🟢 COMPLETED</span>' : '<span class="badge-pending">🔴 PENDING</span>') : '<span style="color:#64748b;font-size:11px;">(No test advised)</span>';
     pHtml += '<div class="patient-box">' +
       '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><strong>'+p.name+'</strong> ('+p.mobile+') '+pBadge+'</div>' +
       '<span style="color:#d97706;font-weight:bold;">Advised Tests: '+(p.pathTests||'None')+'</span><br>' +
       (p.pathReport ? '<div style="background:#f0fdf4;padding:4px;border-radius:4px;margin:4px 0;font-size:12px;"><b>Report:</b> '+p.pathReport+'</div>' : '') +
+      (p.pathFile ? '<a href="'+p.pathFile+'" target="_blank" style="color:#0284c7;font-size:12px;display:inline-block;margin-bottom:2px;font-weight:bold;">📄 View Report File</a><br>' : '') +
+      (p.pathBillFile ? '<a href="'+p.pathBillFile+'" target="_blank" style="color:#16a34a;font-size:12px;display:inline-block;margin-bottom:4px;font-weight:bold;">🧾 View Pathology Bill</a><br>' : '') +
       '<input type="text" id="pr_'+p.mobile+'" placeholder="Enter findings..." value="'+(p.pathReport||'')+'" style="margin:4px 0;">' +
-      '<button class="btn" style="padding:6px;background:#d97706;" onclick="savePathRes(\''+p.mobile+'\')">Save Lab Report</button>' +
+      '<label style="font-size:11px;color:#64748b;">Upload Report Slip / Photo:</label>' +
+      '<input type="file" id="pf_'+p.mobile+'" accept="image/*,.pdf" style="margin-bottom:4px;font-size:12px;">' +
+      '<label style="font-size:11px;color:#64748b;">Upload Lab Bill / Invoice (Optional):</label>' +
+      '<input type="file" id="pbf_'+p.mobile+'" accept="image/*,.pdf" style="margin-bottom:4px;font-size:12px;">' +
+      '<button class="btn" style="padding:6px;background:#d97706;" onclick="savePathRes(\''+p.mobile+'\')">Save & Upload Lab Report / Bill</button>' +
       '</div>';
-
-    // 2. RADIOLOGY
-    var isRadDone = !!(p.radReport);
-    var rBadge = p.radTests ? (isRadDone ? '<span class="badge-done">🟢 COMPLETED</span>' : '<span class="badge-pending">🔴 PENDING</span>') : '<span style="color:#64748b;font-size:11px;">(No scan advised)</span>';
-    rHtml += '<div class="patient-box">' +
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><strong>'+p.name+'</strong> ('+p.mobile+') '+rBadge+'</div>' +
-      '<span style="color:#8b5cf6;font-weight:bold;">Advised Scan: '+(p.radTests||'None')+'</span><br>' +
-      (p.radReport ? '<div style="background:#f0fdf4;padding:4px;border-radius:4px;margin:4px 0;font-size:12px;"><b>Impression:</b> '+p.radReport+'</div>' : '') +
-      '<input type="text" id="rr_'+p.mobile+'" placeholder="Enter scan findings..." value="'+(p.radReport||'')+'" style="margin:4px 0;">' +
-      '<button class="btn" style="padding:6px;background:#8b5cf6;" onclick="saveRadRes(\''+p.mobile+'\')">Save Scan Impression</button>' +
-      '</div>';
-
-    // 3. PHARMACY
-    var mBadge = p.medicines ? (p.dispensed ? '<span class="badge-done">🟢 DISPENSED</span>' : '<span class="badge-pending">🔴 PENDING</span>') : '<span style="color:#64748b;font-size:11px;">(No medicine advised)</span>';
-    mHtml += '<div class="patient-box">' +
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><strong>'+p.name+'</strong> ('+p.mobile+') '+mBadge+'</div>' +
-      '<div style="color:#0284c7;white-space:pre-wrap;font-weight:bold;margin:4px 0;background:#f8fafc;padding:6px;border-radius:4px;">Rx:<br>'+(p.medicines||'None')+'</div>' +
-      (!p.dispensed ? '<button class="btn" style="padding:6px;background:#10b981;margin-top:4px;" onclick="markDispensed(\''+p.mobile+'\')">Mark Dispensed (Dawa Di Gayi)</button>' : '<span style="font-size:11px;color:#15803d;font-weight:bold;">✅ Patient ko dawa di ja chuki hai.</span>') +
-      '</div>';
-  }
-
-  if(cVal) dSel.value=cVal;
-  document.getElementById('pathList').innerHTML = pHtml || '<p style="color:#64748b;">Koi patient register nahi hai.</p>';
-  document.getElementById('radList').innerHTML = rHtml || '<p style="color:#64748b;">Koi patient register nahi hai.</p>';
-  document.getElementById('pharmList').innerHTML = mHtml || '<p style="color:#64748b;">Koi patient register nahi hai.</p>';
-};
-
-window.loadDocDetails=function(){
-  var m=document.getElementById('doc_p_select').value;
-  var p=livePatients[m];
-  if(!p)return;
-
-  document.getElementById('doc_diag').value=p.diagnosis||"";
-  document.getElementById('doc_path_t').value=p.pathTests||"";
-  document.getElementById('doc_rad_t').value=p.radTests||"";
-  document.getElementById('doc_rx').value=p.medicines||"";
-
-  var hBox=document.getElementById('prevHistoryBox');
-  var statusReport = '';
-  if(p.pathTests) statusReport += '<br>🔬 Pathology: ' + (p.pathReport ? '<span class="badge-done">Done: '+p.pathReport+'</span>' : '<span class="badge-pending">Pending</span>');
-  if(p.radTests) statusReport += '<br>🩻 Radiology: ' + (p.radReport ? '<span class="badge-done">Done: '+p.radReport+'</span>' : '<span class="badge-pending">Pending</span>');
-
-  hBox.style.display='block';
-  hBox.innerHTML='<strong>📋 Live Status & Record:</strong>' + statusReport + 
-    (p.prevHistory && p.prevHistory.rx ? '<div style="margin-top:4px;border-top:1px dashed #d97706;padding-top:4px;"><b>Pichhla Rx:</b> '+p.prevHistory.rx+'</div>' : '');
-};
-
-window.saveDocRx=function(){
-  var m=document.getElementById('doc_p_select').value;if(!m){alert("Patient chunein!");return;}
+    // SAVE PATHOLOGY REPORT & BILL
+window.savePathRes=function(m){
+  var r = document.getElementById('pr_'+m).value.trim();
+  var repFile = document.getElementById('pf_'+m);
+  var billFile = document.getElementById('pbf_'+m);
   var p = livePatients[m];
-  if(!p)return;
+  if(!p) return;
 
-  p.diagnosis=document.getElementById('doc_diag').value;
-  p.pathTests=document.getElementById('doc_path_t').value;
-  p.radTests=document.getElementById('doc_rad_t').value;
-  p.medicines=document.getElementById('doc_rx').value;
-  p.lastVisitDate=new Date().toLocaleDateString('en-IN');
+  var readReport = function(cb){
+    if(repFile && repFile.files && repFile.files[0]){
+      var reader = new FileReader();
+      reader.onload = function(e){ cb(e.target.result); };
+      reader.readAsDataURL(repFile.files[0]);
+    } else { cb(null); }
+  };
 
-  saveToCloud(p, function(){
-    var a=document.getElementById('docMsgAlert');a.style.display='block';a.innerText='✅ Doctor Advice Cloud Par Save Ho Gayi!';setTimeout(function(){a.style.display='none';},2500);
-    alert("✅ Doctor Advice sabhi phones ke liye live save ho gayi!");
+  var readBill = function(cb){
+    if(billFile && billFile.files && billFile.files[0]){
+      var reader = new FileReader();
+      reader.onload = function(e){ cb(e.target.result); };
+      reader.readAsDataURL(billFile.files[0]);
+    } else { cb(null); }
+  };
+
+  readReport(function(reportUri){
+    readBill(function(billUri){
+      if(r) p.pathReport = r;
+      if(reportUri) p.pathFile = reportUri;
+      if(billUri) p.pathBillFile = billUri;
+      saveToCloud(p, function(){ alert("✅ Pathology Report aur Bill live save ho gaye!"); });
+    });
   });
 };
 
-window.printOPDParcha=function(){
-  var m=document.getElementById('doc_p_select').value;if(!m){alert("Patient chunein!");return;}
-  var p=livePatients[m];if(!p)return;
-
-  document.getElementById('pr_name').innerText=p.name;
-  document.getElementById('pr_info').innerText=p.age+' Yrs / '+p.gender+' | Mob: '+p.mobile+' | Date: '+(p.lastVisitDate||new Date().toLocaleDateString('en-IN'));
-  document.getElementById('pr_bp').innerText=p.bp;document.getElementById('pr_sugar').innerText=p.sugar;document.getElementById('pr_spo2').innerText=p.spo2;
-  document.getElementById('pr_pulse').innerText=p.pulse;document.getElementById('pr_weight').innerText=p.weight;
-  
-  document.getElementById('pr_diag').innerText=document.getElementById('doc_diag').value||"None";
-  document.getElementById('pr_path').innerText=document.getElementById('doc_path_t').value||"None";
-  document.getElementById('pr_rad').innerText=document.getElementById('doc_rad_t').value||"None";
-  
-  var rawMeds=document.getElementById('doc_rx').value.trim();
-  document.getElementById('pr_rx').innerText = rawMeds || "None Prescribed";
-  window.print();
-};
-
-window.savePathRes=function(m){
-  var r = document.getElementById('pr_'+m).value.trim();
-  if(!r){ alert("Report findings bharein!"); return; }
-  var p = livePatients[m];
-  if(p){
-    p.pathReport = r;
-    saveToCloud(p, function(){ alert("✅ Lab Report live upload ho gayi!"); });
-  }
-};
-
+// SAVE RADIOLOGY REPORT & BILL
 window.saveRadRes=function(m){
   var r = document.getElementById('rr_'+m).value.trim();
-  if(!r){ alert("Scan impression bharein!"); return; }
+  var repFile = document.getElementById('rf_'+m);
+  var billFile = document.getElementById('rbf_'+m);
   var p = livePatients[m];
-  if(p){
-    p.radReport = r;
-    saveToCloud(p, function(){ alert("✅ Scan report live upload ho gayi!"); });
-  }
+  if(!p) return;
+
+  var readReport = function(cb){
+    if(repFile && repFile.files && repFile.files[0]){
+      var reader = new FileReader();
+      reader.onload = function(e){ cb(e.target.result); };
+      reader.readAsDataURL(repFile.files[0]);
+    } else { cb(null); }
+  };
+
+  var readBill = function(cb){
+    if(billFile && billFile.files && billFile.files[0]){
+      var reader = new FileReader();
+      reader.onload = function(e){ cb(e.target.result); };
+      reader.readAsDataURL(billFile.files[0]);
+    } else { cb(null); }
+  };
+
+  readReport(function(reportUri){
+    readBill(function(billUri){
+      if(r) p.radReport = r;
+      if(reportUri) p.radFile = reportUri;
+      if(billUri) p.radBillFile = billUri;
+      saveToCloud(p, function(){ alert("✅ Scan findings aur Scan Bill live save ho gaye!"); });
+    });
+  });
 };
 
-window.markDispensed=function(m){
+// PHARMACY BILL & DISPENSE
+window.savePharmBill=function(m){
+  var amt = document.getElementById('ph_amt_'+m).value.trim();
+  var billFile = document.getElementById('ph_f_'+m);
   var p = livePatients[m];
-  if(p){
+  if(!p) return;
+
+  function finishPharm(billUri){
+    if(amt) p.pharmBillAmount = amt;
+    if(billUri) p.pharmBillFile = billUri;
     p.dispensed = true;
-    saveToCloud(p, function(){ alert("✅ Medicines DISPENSED marked!"); });
+    saveToCloud(p, function(){ alert("✅ Pharmacy Bill save hua & Dawa Dispensed mark ho gayi!"); });
+  }
+
+  if(billFile && billFile.files && billFile.files[0]){
+    var reader = new FileReader();
+    reader.onload = function(e){ finishPharm(e.target.result); };
+    reader.readAsDataURL(billFile.files[0]);
+  } else {
+    finishPharm(null);
   }
 };
 </script>
 </head>
 <body>
-  <div style="text-align:center;margin-bottom:6px;"><h2 style="color:#0284c7;margin:0;">NBS Poly Clinic</h2></div>
+
+<div style="text-align:center;margin-bottom:6px;"><h2 style="color:#0284c7;margin:0;">NBS Poly Clinic</h2></div>
 <div class="sync-indicator">🟢 Live Cloud Database Connected</div>
 
 <div id="loginScreen" class="card" style="max-width:350px;margin:15px auto;">
@@ -309,19 +331,30 @@ window.markDispensed=function(m){
     <button class="nav-btn" id="nb_rad" onclick="showPortalTab('rad')">4. Radiology</button>
     <button class="nav-btn" id="nb_pharm" onclick="showPortalTab('pharm')">5. Pharmacy</button>
   </div>
-
+  <!-- REGISTRATION -->
   <div id="tab_reg" style="display:none;">
     <div class="card">
-      <h4 style="margin:0 0 8px 0;">Patient Registration & Check-in</h4>
+      <h4 style="margin:0 0 8px 0;">Patient Registration & Appointment</h4>
       <div class="form-group">
         <label>Mobile Number:</label>
         <input type="tel" id="p_mob" placeholder="Enter 10-digit Mobile..." oninput="searchPatientOnInput()">
       </div>
       <div id="regHistoryBox" class="history-box"></div>
-      <div class="form-group"><label>Name:</label><input type="text" id="p_name"></div>
+      <div class="form-group"><label>Patient Name:</label><input type="text" id="p_name"></div>
       <div class="form-group"><label>Age & Gender:</label>
         <div style="display:flex;gap:6px;"><input type="number" id="p_age" placeholder="Age" style="width:50%;"><select id="p_gender" style="width:50%;"><option value="Male">Male</option><option value="Female">Female</option></select></div>
       </div>
+
+      <!-- NEW APPOINTMENT FIELDS -->
+      <div style="display:flex;gap:6px;margin-bottom:8px;">
+        <div style="width:50%;"><label>Appointment Date:</label><input type="date" id="p_date"></div>
+        <div style="width:50%;"><label>Time Slot:</label><input type="time" id="p_time"></div>
+      </div>
+      <div class="form-group">
+        <label>Appointment / Consultation Fee (Rs.):</label>
+        <input type="number" id="p_fee" placeholder="e.g. 200, 300, 500" value="200">
+      </div>
+
       <div class="grid-v">
         <div><label>BP:</label><input type="text" id="p_bp" placeholder="120/80"></div>
         <div><label>Sugar:</label><input type="text" id="p_sugar" placeholder="110"></div>
@@ -329,11 +362,15 @@ window.markDispensed=function(m){
         <div><label>Pulse:</label><input type="text" id="p_pulse" placeholder="72"></div>
         <div><label>Weight:</label><input type="text" id="p_weight" placeholder="65"></div>
       </div>
-      <button type="button" class="btn" onclick="savePatientDirect()">Register / Update Patient</button>
+      <button type="button" class="btn" onclick="savePatientDirect()">Register / Book Appointment</button>
       <div id="msgAlert"></div>
+
+      <!-- WHATSAPP MESSAGE BUTTON -->
+      <a id="waSendBtn" target="_blank" class="btn-wa" style="display:none;">📲 Send Confirmation to Patient (WhatsApp)</a>
     </div>
   </div>
 
+  <!-- DOCTOR -->
   <div id="tab_doc" style="display:none;">
     <div class="card">
       <h4 style="margin:0 0 8px 0;">Doctor Consultation</h4>
@@ -348,15 +385,21 @@ window.markDispensed=function(m){
       </div>
       <button type="button" class="btn" onclick="saveDocRx()">Save Rx to All Departments</button>
       <div id="docMsgAlert"></div>
-      <button type="button" class="btn" style="background:#475569;" onclick="printOPDParcha()">🖨️ Print Prescription / Parcha</button>
+      <button type="button" class="btn" style="background:#475569;" onclick="printOPDParcha()">🖨️️ Print Prescription / Parcha</button>
     </div>
   </div>
 
+  <!-- PATHOLOGY WITH UPLOAD REPORT & BILL -->
   <div id="tab_path" style="display:none;"><div class="card"><h4 style="margin:0 0 8px 0;">Pathology Lab Portal</h4><div id="pathList"></div></div></div>
+  
+  <!-- RADIOLOGY WITH UPLOAD SCAN & BILL -->
   <div id="tab_rad" style="display:none;"><div class="card"><h4 style="margin:0 0 8px 0;">Radiology Portal</h4><div id="radList"></div></div></div>
+  
+  <!-- PHARMACY WITH MEDICINE BILL & INVOICE UPLOAD -->
   <div id="tab_pharm" style="display:none;"><div class="card"><h4 style="margin:0 0 8px 0;">Pharmacy Portal</h4><div id="pharmList"></div></div></div>
 </div>
 
+<!-- PRINTABLE PARCHA -->
 <div id="parchaArea">
   <div class="pr-head">
     <h2 style="margin:0;">NBS Poly Clinic</h2>
@@ -380,4 +423,3 @@ window.markDispensed=function(m){
 
 </body>
 </html>
-    
